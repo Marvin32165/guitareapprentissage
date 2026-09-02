@@ -25,7 +25,9 @@ model LessonProgress {
   updatedAt   DateTime  @updatedAt
 }
 
-/// Une carte de révision espacée par notion (SM-2 simplifié).
+/// Carte de révision espacée par notion (SM-2 simplifié). Elle porte l'état
+/// courant (agrégat de lecture) ; l'historique des révisions vit dans
+/// PracticeEvent (source de vérité).
 model ReviewItem {
   id           String    @id @default(cuid())
   conceptId    String    @unique // ex: "intervalle-tierce-majeure"
@@ -41,8 +43,28 @@ model ReviewItem {
 }
 
 // ─────────────────────────────────────────────────────────────
-// OREILLE — agrégat par type d'exercice (pour pondérer vers ce
-// qui est raté) ; le détail quotidien vit dans DailyStat.
+// JOURNAL — source de vérité (append-only).
+// Chaque réponse d'oreille et chaque révision espacée y écrit une
+// ligne. EarStat et ReviewItem ne sont plus que des agrégats de
+// LECTURE dérivés de ce journal ; on ne réécrit jamais l'historique.
+// ─────────────────────────────────────────────────────────────
+
+model PracticeEvent {
+  id        String   @id @default(cuid())
+  type      String // ex: "ear_interval", "ear_chord_quality", "review"
+  refId     String // sujet concerné : sous-type d'oreille ou conceptId SR
+  correct   Boolean? // réponses d'oreille (juste / faux)
+  quality   Int? // note SM-2 (0–5) des révisions espacées
+  createdAt DateTime @default(now())
+
+  @@index([type, createdAt])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// OREILLE — agrégat de LECTURE par type d'exercice (pour pondérer
+// vers ce qui est raté), dérivé de PracticeEvent ; le détail
+// quotidien vit dans DailyStat.
 // ─────────────────────────────────────────────────────────────
 
 model EarStat {

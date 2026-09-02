@@ -96,6 +96,13 @@ turso db shell <nom-base> < prisma/migrations/<horodatage>_ma_migration/migratio
 - Déverrouillage audio (`src/components/audio`) : bouton « Activer le son »
   requis avant tout son (politique d'autoplay iOS / Web Audio).
 
+> **À implémenter en phase 7 — file d'écritures hors-ligne (outbox).**
+> Les réponses d'oreille et les révisions espacées écrivent dans le journal
+> append-only `PracticeEvent`. Hors-ligne, ces écritures devront être mises en
+> file dans une **outbox IndexedDB** côté client, puis rejouées vers le serveur
+> à la reconnexion (idéalement via Background Sync, avec repli sur un flush au
+> retour en ligne). Non codé pour l'instant.
+
 ## Déploiement (Vercel + Turso)
 
 1. Créer une base Turso : `turso db create guitare` puis récupérer l'URL
