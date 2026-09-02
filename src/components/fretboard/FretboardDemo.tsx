@@ -1,9 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Fretboard, roleStyle, type Orientation, type LabelMode } from "./Fretboard";
+import {
+  Fretboard,
+  roleStyle,
+  type Orientation,
+  type LabelMode,
+  type Handed,
+} from "./Fretboard";
 import { AudioUnlockButton } from "@/components/audio/AudioProvider";
-import { parseNote, formatNote, type Note } from "@/lib/music/pitch";
+import {
+  parseNote,
+  formatNoteIn,
+  formatNoteBoth,
+  pitchClass,
+  type Note,
+  type NoteSystem,
+} from "@/lib/music/pitch";
 import { transpose } from "@/lib/music/intervals";
 import {
   majorScale,
@@ -11,14 +24,15 @@ import {
   majorPentatonic,
   minorPentatonic,
 } from "@/lib/music/scales";
-import { pitchClass } from "@/lib/music/pitch";
 import {
   type FretPosition,
   type NoteRole,
+  TUNINGS,
   degreeName,
   roleOfDegree,
   fretboardPositions,
   pentatonicBoxes,
+  capoSoundingRoot,
 } from "@/lib/music/fretboard";
 
 const ROOTS = ["C", "G", "D", "A", "E", "B", "F#", "Db", "Ab", "Eb", "Bb", "F"];
@@ -50,6 +64,14 @@ const CONTENT_LABELS: Record<Content, string> = {
   boxMajor: "Boîte pentatonique majeure",
 };
 
+const CHORD_SUFFIX: Partial<Record<Content, string>> = {
+  chordMaj: "",
+  chordMin: "m",
+  chordMaj7: "maj7",
+  chord7: "7",
+  chordMin7: "m7",
+};
+
 function chordNotes(root: Note, kind: Content): Note[] {
   const M3 = transpose(root, 2, 4);
   const m3 = transpose(root, 2, 3);
@@ -77,17 +99,23 @@ export function FretboardDemo() {
   const [content, setContent] = useState<Content>("pentaMinor");
   const [orientation, setOrientation] = useState<Orientation>("vertical");
   const [labelMode, setLabelMode] = useState<LabelMode>("note");
+  const [noteSystem, setNoteSystem] = useState<NoteSystem>("anglo");
+  const [tuningId, setTuningId] = useState("standard");
+  const [capo, setCapo] = useState(0);
+  const [handed, setHanded] = useState<Handed>("right");
   const [boxIndex, setBoxIndex] = useState(1);
   const [selected, setSelected] = useState<FretPosition | null>(null);
 
   const root = useMemo(() => parseNote(rootLabel), [rootLabel]);
   const rootPc = pitchClass(root);
+  const tuning = TUNINGS[tuningId] ?? TUNINGS.standard;
   const isBox = content === "boxMinor" || content === "boxMajor";
+  const isChord = content.startsWith("chord");
 
   const { positions, fromFret, toFret } = useMemo(() => {
     if (isBox) {
       const quality = content === "boxMinor" ? "minor" : "major";
-      const boxes = pentatonicBoxes(root, quality);
+      const boxes = pentatonicBoxes(root, quality, tuning);
       const box = boxes[Math.min(boxIndex, boxes.length) - 1];
       const allFrets = box.positions.map((p) => p.fret);
       const lo = Math.max(0, Math.min(...allFrets) - 1);
@@ -100,20 +128,36 @@ export function FretboardDemo() {
     else if (content === "pentaMajor") notes = majorPentatonic(root);
     else if (content === "pentaMinor") notes = minorPentatonic(root);
     else notes = chordNotes(root, content);
-    return { positions: fretboardPositions(notes, rootPc, { fromFret: 0, toFret: 15 }), fromFret: 0, toFret: 15 };
-  }, [root, rootPc, content, isBox, boxIndex]);
+    // capo n'est PAS appliqué aux positions : on montre la FORME (positions
+    // absolues) ; le capo n'agit que sur le son et le nom réel de l'accord.
+    return {
+      positions: fretboardPositions(notes, rootPc, { fromFret: 0, toFret: 15, tuning }),
+      fromFret: 0,
+      toFret: 15,
+    };
+  }, [root, rootPc, content, isBox, boxIndex, tuning]);
+
+  const capoInfo = useMemo(() => {
+    if (!isChord || capo === 0) return null;
+    const suffix = CHORD_SUFFIX[content] ?? "";
+    const realRoot = capoSoundingRoot(root, capo);
+    return {
+      shape: formatNoteIn(root, noteSystem) + suffix,
+      real: formatNoteIn(realRoot, noteSystem) + suffix,
+    };
+  }, [isChord, capo, content, root, noteSystem]);
 
   const legendRoles: NoteRole[] = ["root", "third", "fifth", "other"];
 
   return (
     <div className="space-y-5">
-      {/* Contrôles */}
+      {/* Contrôles principaux */}
       <div className="flex flex-wrap items-end gap-3">
         <Field label="Tonalité">
           <select
             value={rootLabel}
             onChange={(e) => setRootLabel(e.target.value)}
-            className="min-h-11 rounded-lg border border-neutral-700 bg-neutral-900 px-3 text-neutral-100"
+            className={selectClass}
           >
             {ROOTS.map((r) => (
               <option key={r} value={r}>
@@ -127,7 +171,7 @@ export function FretboardDemo() {
           <select
             value={content}
             onChange={(e) => setContent(e.target.value as Content)}
-            className="min-h-11 rounded-lg border border-neutral-700 bg-neutral-900 px-3 text-neutral-100"
+            className={selectClass}
           >
             {(Object.keys(CONTENT_LABELS) as Content[]).map((c) => (
               <option key={c} value={c}>
@@ -142,7 +186,7 @@ export function FretboardDemo() {
             <select
               value={boxIndex}
               onChange={(e) => setBoxIndex(Number(e.target.value))}
-              className="min-h-11 rounded-lg border border-neutral-700 bg-neutral-900 px-3 text-neutral-100"
+              className={selectClass}
             >
               {[1, 2, 3, 4, 5].map((n) => (
                 <option key={n} value={n}>
@@ -152,8 +196,37 @@ export function FretboardDemo() {
             </select>
           </Field>
         )}
+
+        <Field label="Accordage">
+          <select
+            value={tuningId}
+            onChange={(e) => setTuningId(e.target.value)}
+            className={selectClass}
+          >
+            {Object.values(TUNINGS).map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Capo">
+          <select
+            value={capo}
+            onChange={(e) => setCapo(Number(e.target.value))}
+            className={selectClass}
+          >
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((n) => (
+              <option key={n} value={n}>
+                {n === 0 ? "aucun" : n}
+              </option>
+            ))}
+          </select>
+        </Field>
       </div>
 
+      {/* Bascules d'affichage */}
       <div className="flex flex-wrap items-center gap-3">
         <Toggle
           options={[
@@ -171,8 +244,32 @@ export function FretboardDemo() {
           value={labelMode}
           onChange={(v) => setLabelMode(v as LabelMode)}
         />
+        <Toggle
+          options={[
+            { value: "anglo", label: "C-D-E" },
+            { value: "latin", label: "Do-Ré-Mi" },
+          ]}
+          value={noteSystem}
+          onChange={(v) => setNoteSystem(v as NoteSystem)}
+        />
+        <Toggle
+          options={[
+            { value: "right", label: "Droitier" },
+            { value: "left", label: "Gaucher" },
+          ]}
+          value={handed}
+          onChange={(v) => setHanded(v as Handed)}
+        />
         <AudioUnlockButton />
       </div>
+
+      {/* Capo : forme vs son réel */}
+      {capoInfo && (
+        <p className="text-sm text-amber-400">
+          Forme de <span className="font-semibold">{capoInfo.shape}</span>, sonne en{" "}
+          <span className="font-semibold">{capoInfo.real}</span> (capo {capo}).
+        </p>
+      )}
 
       {/* Lecture de la note sélectionnée */}
       <div
@@ -181,7 +278,9 @@ export function FretboardDemo() {
       >
         {selected ? (
           <span className="text-neutral-200">
-            <span className="text-lg font-semibold">{formatNote(selected.note)}</span>
+            <span className="text-lg font-semibold">
+              {formatNoteBoth(selected.note, noteSystem)}
+            </span>
             {"  "}· degré{" "}
             <span className="font-medium text-emerald-400">
               {degreeName(selected.degreeSemitones)}
@@ -205,6 +304,10 @@ export function FretboardDemo() {
             fromFret={fromFret}
             toFret={toFret}
             labelMode={labelMode}
+            noteSystem={noteSystem}
+            tuning={tuning}
+            capo={capo}
+            handed={handed}
             onSelect={setSelected}
           />
         </div>
@@ -228,6 +331,9 @@ export function FretboardDemo() {
     </div>
   );
 }
+
+const selectClass =
+  "min-h-11 rounded-lg border border-neutral-700 bg-neutral-900 px-3 text-neutral-100";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (

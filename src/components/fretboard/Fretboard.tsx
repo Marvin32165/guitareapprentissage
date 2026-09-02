@@ -4,16 +4,19 @@ import { useMemo } from "react";
 import {
   type FretPosition,
   type NoteRole,
+  type Tuning,
+  STANDARD,
   roleOfDegree,
   degreeName,
   midiAtFret,
   STRING_NUMBERS,
 } from "@/lib/music/fretboard";
-import { formatNote } from "@/lib/music/pitch";
+import { type NoteSystem, formatNote, formatNoteIn } from "@/lib/music/pitch";
 import { playMidi } from "@/lib/audio/engine";
 
 export type Orientation = "horizontal" | "vertical";
 export type LabelMode = "note" | "degree";
+export type Handed = "right" | "left";
 
 export interface FretboardProps {
   positions: FretPosition[];
@@ -21,6 +24,10 @@ export interface FretboardProps {
   fromFret?: number;
   toFret?: number;
   labelMode?: LabelMode;
+  noteSystem?: NoteSystem;
+  tuning?: Tuning;
+  capo?: number;
+  handed?: Handed;
   onSelect?: (pos: FretPosition) => void;
 }
 
@@ -52,6 +59,10 @@ export function Fretboard({
   fromFret = 0,
   toFret = 15,
   labelMode = "note",
+  noteSystem = "anglo",
+  tuning = STANDARD,
+  capo = 0,
+  handed = "right",
   onSelect,
 }: FretboardProps) {
   const vertical = orientation === "vertical";
@@ -64,10 +75,19 @@ export function Fretboard({
 
   const alongNote = (f: number) => ALONG_PAD + (f - fromFret + 0.5) * CELL;
   const alongWire = (k: number) => ALONG_PAD + k * CELL; // k = 0..nFrets
-  const crossString = (stringIndex: number) =>
-    vertical
-      ? CROSS_PAD + stringIndex * GAP // 6e corde (grave) à gauche
-      : CROSS_PAD + (5 - stringIndex) * GAP; // 6e corde en bas
+  // Gaucher : ordre des cordes inversé sur l'axe transversal.
+  const flip = handed === "left";
+  const crossString = (stringIndex: number) => {
+    // Droitier : vertical → 6e corde à gauche ; horizontal → 6e corde en bas.
+    const idx = vertical
+      ? flip
+        ? 5 - stringIndex
+        : stringIndex
+      : flip
+        ? stringIndex
+        : 5 - stringIndex;
+    return CROSS_PAD + idx * GAP;
+  };
 
   const XY = (along: number, cross: number) =>
     vertical ? { x: cross, y: along } : { x: along, y: cross };
@@ -162,6 +182,27 @@ export function Fretboard({
         );
       })}
 
+      {/* Capodastre */}
+      {capo > 0 && capo >= fromFret && capo <= toFret
+        ? (() => {
+            const a = alongNote(capo);
+            const s = XY(a, crossMin);
+            const e = XY(a, crossMax);
+            return (
+              <line
+                x1={s.x}
+                y1={s.y}
+                x2={e.x}
+                y2={e.y}
+                stroke="#f59e0b"
+                strokeWidth={8}
+                strokeLinecap="round"
+                opacity={0.85}
+              />
+            );
+          })()
+        : null}
+
       {/* Numéros de frette */}
       {frets.map((f) => {
         const a = alongNote(f);
@@ -189,7 +230,9 @@ export function Fretboard({
         const style = ROLE_STYLE[role];
         const { x, y } = XY(alongNote(pos.fret), crossString(pos.stringIndex));
         const label =
-          labelMode === "degree" ? degreeName(pos.degreeSemitones) : formatNote(pos.note);
+          labelMode === "degree"
+            ? degreeName(pos.degreeSemitones)
+            : formatNoteIn(pos.note, noteSystem);
         return (
           <g
             key={`${pos.stringIndex}-${pos.fret}`}
@@ -198,13 +241,13 @@ export function Fretboard({
             aria-label={`${formatNote(pos.note)}, degré ${degreeName(pos.degreeSemitones)}, corde ${pos.stringNumber} frette ${pos.fret}`}
             style={{ cursor: "pointer" }}
             onClick={() => {
-              void playMidi(midiAtFret(pos.stringIndex, pos.fret));
+              void playMidi(midiAtFret(pos.stringIndex, pos.fret, tuning, capo));
               onSelect?.(pos);
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                void playMidi(midiAtFret(pos.stringIndex, pos.fret));
+                void playMidi(midiAtFret(pos.stringIndex, pos.fret, tuning, capo));
                 onSelect?.(pos);
               }
             }}

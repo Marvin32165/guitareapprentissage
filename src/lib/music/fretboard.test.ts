@@ -8,9 +8,12 @@ import {
   roleOfDegree,
   degreeName,
   fretboardPositions,
+  TUNINGS,
+  spellPitchClass,
+  capoSoundingRoot,
 } from "./fretboard";
 import { minorPentatonic, majorScale } from "./scales";
-import { pitchClass } from "./pitch";
+import { pitchClass, formatNote } from "./pitch";
 
 describe("fretboard — hauteurs", () => {
   it("classe de hauteur à une frette", () => {
@@ -66,6 +69,36 @@ describe("fretboard — MIDI, rôles et degrés", () => {
     expect(degreeName(3)).toBe("♭3");
     expect(degreeName(7)).toBe("5");
     expect(degreeName(10)).toBe("♭7");
+  });
+});
+
+describe("fretboard — accordages paramétrables", () => {
+  it("Drop D : la 6e corde à vide devient Ré (pas Mi)", () => {
+    // Standard : 6e corde à vide = Mi
+    expect(formatNote(spellPitchClass(pitchClassAtFret(0, 0)))).toBe("E");
+    // Drop D : 6e corde à vide = Ré, MIDI 38
+    expect(pitchClassAtFret(0, 0, TUNINGS.dropD)).toBe(2);
+    expect(midiAtFret(0, 0, TUNINGS.dropD)).toBe(38);
+    expect(formatNote(spellPitchClass(pitchClassAtFret(0, 0, TUNINGS.dropD)))).toBe("D");
+    // Drop D : 6e corde, 2e frette = Mi ; 5e frette = Sol
+    expect(formatNote(spellPitchClass(pitchClassAtFret(0, 2, TUNINGS.dropD)))).toBe("E");
+    expect(formatNote(spellPitchClass(pitchClassAtFret(0, 5, TUNINGS.dropD)))).toBe("G");
+    // les autres cordes restent standard
+    expect(midiAtFret(1, 0, TUNINGS.dropD)).toBe(45); // 5e corde = La
+  });
+});
+
+describe("fretboard — capodastre (forme vs son réel)", () => {
+  it("forme de Mi (E) + capo 3 → sonne en Sol (G)", () => {
+    expect(formatNote(capoSoundingRoot(note("E"), 3))).toBe("G");
+  });
+  it("capo décale bien la hauteur réelle jouée", () => {
+    // 6e corde à vide, capo 3 : sonne Sol (MIDI 43)
+    expect(midiAtFret(0, 0, TUNINGS.standard, 3)).toBe(43);
+    expect(pitchClassAtFret(0, 0, TUNINGS.standard, 3)).toBe(7);
+  });
+  it("autre exemple : forme de La + capo 2 → Si", () => {
+    expect(formatNote(capoSoundingRoot(note("A"), 2))).toBe("B");
   });
 });
 
