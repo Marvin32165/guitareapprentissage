@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Prisma et le client libSQL chargent des binaires natifs : on les sort du
+  // bundle serveur pour qu'ils soient requis depuis node_modules à l'exécution
+  // (évite les erreurs de binding en environnement serverless).
+  serverExternalPackages: [
+    "@prisma/client",
+    "@prisma/adapter-libsql",
+    "@libsql/client",
+  ],
+
   async headers() {
     return [
       {
