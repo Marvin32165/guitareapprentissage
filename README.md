@@ -103,14 +103,72 @@ turso db shell <nom-base> < prisma/migrations/<horodatage>_ma_migration/migratio
 > à la reconnexion (idéalement via Background Sync, avec repli sur un flush au
 > retour en ligne). Non codé pour l'instant.
 
-## Déploiement (Vercel + Turso)
+## Déploiement (Vercel + Turso) — runbook
 
-1. Créer une base Turso : `turso db create guitare` puis récupérer l'URL
-   (`turso db show guitare`) et un jeton (`turso db tokens create guitare`).
-2. Appliquer les migrations à Turso (voir ci-dessus).
-3. Sur Vercel, définir `APP_PASSWORD`, `SESSION_SECRET`, `TURSO_DATABASE_URL`,
-   `TURSO_AUTH_TOKEN`.
-4. Déployer (le `postinstall` lance `prisma generate`).
+La branche `main` est la branche de production : c'est elle que Vercel construit.
+Le code y est déjà fusionné et le build est vérifié. Il reste les étapes qui
+nécessitent **tes comptes** Turso et Vercel.
+
+### 1. Créer la base Turso
+
+```bash
+# Installer la CLI (une fois)
+curl -sSfL https://tur.so/install.sh | bash
+turso auth login
+
+turso db create guitare
+turso db show guitare --url            # -> TURSO_DATABASE_URL (libsql://…)
+turso db tokens create guitare         # -> TURSO_AUTH_TOKEN
+```
+
+### 2. Appliquer le schéma à Turso
+
+Les migrations sont dans `prisma/migrations/`. On applique leur SQL dans l'ordre :
+
+```bash
+for f in prisma/migrations/*/migration.sql; do
+  echo "-- $f"
+  turso db shell guitare < "$f"
+done
+```
+
+Vérifier que les tables existent :
+
+```bash
+turso db shell guitare ".tables"
+```
+
+### 3. Générer un secret de session
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+### 4. Créer le projet Vercel
+
+1. vercel.com → **Add New… → Project** → importer `guitareapprentissage`.
+2. Framework : Next.js (détecté). Aucun réglage de build à changer.
+3. **Production Branch : `main`** (Settings → Git).
+4. Variables d'environnement (Settings → Environment Variables, *Production*) :
+
+   | Variable | Valeur |
+   | --- | --- |
+   | `APP_PASSWORD` | le mot de passe que tu veux pour entrer dans l'app |
+   | `SESSION_SECRET` | la chaîne générée à l'étape 3 |
+   | `TURSO_DATABASE_URL` | l'URL `libsql://…` de l'étape 1 |
+   | `TURSO_AUTH_TOKEN` | le jeton de l'étape 1 |
+
+   `DATABASE_URL` n'est **pas** nécessaire en production : dès que
+   `TURSO_DATABASE_URL` est défini, le client Prisma bascule sur Turso.
+5. **Deploy**. Le `postinstall` lance `prisma generate` automatiquement.
+
+### 5. Vérifier
+
+- Ouvrir l'URL : elle doit rediriger vers `/login`.
+- Se connecter avec `APP_PASSWORD`.
+- Aller dans **Théorie**, terminer une leçon, revenir au parcours : le badge
+  « Terminée » doit persister (c'est la preuve que Turso répond en écriture).
+- Sur le téléphone : « Ajouter à l'écran d'accueil » pour installer la PWA.
 
 ## Sécurité — avertissement d'audit
 
@@ -132,8 +190,11 @@ pas partie du bundle de production déployé sur Vercel. Ne pas lancer
    cliquables (son Tone.js + nom/degré), **accordages paramétrables** (Standard,
    Drop D, DADGAD, Open G, Open D, Mi♭), **capo** (forme vs nom réel), **gaucher/
    droitier**, **double nommage latin/anglo**, page démo `/demo/fretboard`
-4. ⬜ Module théorie (leçons + exercices) **+ notation sur portée (VexFlow)**
-   **→ premier déploiement Vercel + Turso à la fin de cette phase**
+4. **Module théorie — découpé en trois**
+   - 4a ✅ **Parcours + 4 premières leçons + exercices** (notes sur le manche,
+     intervalles, gamme majeure, CAGED) **→ déploiement Vercel + Turso**
+   - 4b ⬜ Notation sur portée (VexFlow) + parcours de lecture
+   - 4c ⬜ Les 7 leçons restantes + formes d'accords ouverts (CAGED)
 5. ⬜ Module oreille (+ exercice de conversion latin ↔ anglo)
 6. ⬜ Module métronome & technique (+ détection micro, backing tracks échantillonnés)
 7. ⬜ Module progression (répétition espacée, routine, stats, répertoire,
