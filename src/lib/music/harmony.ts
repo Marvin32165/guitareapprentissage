@@ -1,5 +1,11 @@
 import { type Note } from "./pitch";
-import { majorScale } from "./scales";
+import {
+  majorScale,
+  naturalMinorScale,
+  buildScale,
+  HARMONIC_MINOR,
+  MELODIC_MINOR,
+} from "./scales";
 import {
   type Triad,
   type SeventhChord,
@@ -10,14 +16,15 @@ import {
 } from "./chords";
 
 // Harmonisation : on empile des tierces sur chaque degré. Les qualités
-// (I majeur, ii mineur, vii° diminué…) ÉMERGENT du calcul, elles ne sont pas
-// posées à la main.
+// (I majeur, ii mineur, vii° diminué, III+ augmenté en mineur harmonique…)
+// ÉMERGENT du calcul, elles ne sont pas posées à la main. Fonctionne pour
+// n'importe quelle gamme à 7 degrés.
 
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII"];
 
 export interface HarmonizedDegree {
   degree: number; // 1..7
-  roman: string; // I, ii, iii, IV, V, vi, vii°
+  roman: string; // I, ii, iii, IV, V, vi, vii° …
   triad: Triad;
   seventhRoman: string; // Imaj7, ii7, …, viiø7
   seventh: SeventhChord;
@@ -51,9 +58,8 @@ function seventhRoman(
   return core + suffix[seventhQuality];
 }
 
-/** Harmonise une gamme majeure : 7 degrés, triades + septièmes + chiffrage. */
-export function harmonizeMajor(tonic: Note): HarmonizedDegree[] {
-  const scale = majorScale(tonic);
+/** Harmonise n'importe quelle gamme de 7 notes (triades + septièmes). */
+export function harmonizeScale(scale: Note[]): HarmonizedDegree[] {
   return scale.map((_, i) => {
     const triad = triadOnScaleDegree(scale, i);
     const seventh = seventhOnScaleDegree(scale, i);
@@ -66,3 +72,11 @@ export function harmonizeMajor(tonic: Note): HarmonizedDegree[] {
     };
   });
 }
+
+export const harmonizeMajor = (tonic: Note) => harmonizeScale(majorScale(tonic));
+export const harmonizeNaturalMinor = (tonic: Note) =>
+  harmonizeScale(naturalMinorScale(tonic));
+export const harmonizeHarmonicMinor = (tonic: Note) =>
+  harmonizeScale(buildScale(tonic, HARMONIC_MINOR));
+export const harmonizeMelodicMinor = (tonic: Note) =>
+  harmonizeScale(buildScale(tonic, MELODIC_MINOR));

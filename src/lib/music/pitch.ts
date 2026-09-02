@@ -68,6 +68,37 @@ export function parseNote(s: string): Note {
   return { letter, accidental };
 }
 
+// ── Double nommage : anglo-saxon (C D E) et latin (Do Ré Mi) ──
+// On part de zéro en théorie : les deux vocabulaires sont ancrés dès le début.
+
+export type NoteSystem = "anglo" | "latin";
+
+const LATIN_NAMES: Record<Letter, string> = {
+  C: "Do",
+  D: "Ré",
+  E: "Mi",
+  F: "Fa",
+  G: "Sol",
+  A: "La",
+  B: "Si",
+};
+
+export function formatNoteLatin(n: Note): string {
+  const sym = n.accidental === 0 ? "" : n.accidental > 0 ? "#".repeat(n.accidental) : "b".repeat(-n.accidental);
+  return LATIN_NAMES[n.letter] + sym;
+}
+
+export function formatNoteIn(n: Note, system: NoteSystem): string {
+  return system === "latin" ? formatNoteLatin(n) : formatNote(n);
+}
+
+/** Affiche les deux systèmes, le principal d'abord : "Mi (E)" ou "E (Mi)". */
+export function formatNoteBoth(n: Note, primary: NoteSystem = "anglo"): string {
+  const anglo = formatNote(n);
+  const latin = formatNoteLatin(n);
+  return primary === "latin" ? `${latin} (${anglo})` : `${anglo} (${latin})`;
+}
+
 export function notesEqual(a: Note, b: Note): boolean {
   return a.letter === b.letter && a.accidental === b.accidental;
 }

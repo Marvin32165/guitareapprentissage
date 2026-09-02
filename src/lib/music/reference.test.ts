@@ -1,8 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { note, formatNote } from "./pitch";
-import { harmonizeMajor } from "./harmony";
+import {
+  harmonizeMajor,
+  harmonizeNaturalMinor,
+  harmonizeHarmonicMinor,
+} from "./harmony";
 import { modesOfMajor } from "./modes";
 import { pentatonicBoxes } from "./fretboard";
+import { MAJOR, buildScale, scaleNoteNames } from "./scales";
 
 /**
  * TESTS DE RÉFÉRENCE — valeurs écrites en dur, tirées de la théorie musicale
@@ -37,6 +42,66 @@ describe("référence — harmonisation de Do majeur", () => {
       "vi7",
       "viiø7",
     ]);
+  });
+});
+
+describe("référence — harmonisation de La mineur naturelle", () => {
+  const h = harmonizeNaturalMinor(note("A"));
+  it("triades et chiffrage : i ii° III iv v VI VII", () => {
+    expect(h.map((x) => x.triad.symbol)).toEqual(["Am", "B°", "C", "Dm", "Em", "F", "G"]);
+    expect(h.map((x) => x.roman)).toEqual(["i", "ii°", "III", "iv", "v", "VI", "VII"]);
+  });
+});
+
+describe("référence — harmonisation de La mineur harmonique", () => {
+  const h = harmonizeHarmonicMinor(note("A"));
+  it("triades : le V devient majeur et le vii° diminué (G#°)", () => {
+    expect(h.map((x) => x.triad.symbol)).toEqual([
+      "Am",
+      "B°",
+      "C+",
+      "Dm",
+      "E",
+      "F",
+      "G#°",
+    ]);
+    expect(h.map((x) => x.roman)).toEqual(["i", "ii°", "III+", "iv", "V", "VI", "vii°"]);
+  });
+  it("le V est bien un accord de Mi majeur et le vii° un Sol# diminué", () => {
+    expect(h[4].triad.notes.map(formatNote)).toEqual(["E", "G#", "B"]);
+    expect(h[6].triad.notes.map(formatNote)).toEqual(["G#", "B", "D"]);
+  });
+});
+
+describe("référence — cohérence orthographique (pas de double altération)", () => {
+  it("Fa# majeur", () => {
+    expect(scaleNoteNames(note("F", 1), MAJOR)).toEqual([
+      "F#",
+      "G#",
+      "A#",
+      "B",
+      "C#",
+      "D#",
+      "E#",
+    ]);
+  });
+  it("Solb majeur", () => {
+    expect(scaleNoteNames(note("G", -1), MAJOR)).toEqual([
+      "Gb",
+      "Ab",
+      "Bb",
+      "Cb",
+      "Db",
+      "Eb",
+      "F",
+    ]);
+  });
+  it("aucune altération double dans Fa# ni Solb majeur", () => {
+    for (const tonic of [note("F", 1), note("G", -1)]) {
+      for (const n of buildScale(tonic, MAJOR)) {
+        expect(Math.abs(n.accidental)).toBeLessThanOrEqual(1);
+      }
+    }
   });
 });
 

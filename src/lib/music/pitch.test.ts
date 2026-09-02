@@ -1,5 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { note, pitchClass, formatNote, parseNote, letterAt } from "./pitch";
+import {
+  note,
+  pitchClass,
+  formatNote,
+  parseNote,
+  letterAt,
+  formatNoteLatin,
+  formatNoteIn,
+  formatNoteBoth,
+} from "./pitch";
 
 describe("pitch", () => {
   it("calcule la classe de hauteur", () => {
@@ -23,5 +32,23 @@ describe("pitch", () => {
     expect(letterAt(0)).toBe("C");
     expect(letterAt(7)).toBe("C");
     expect(letterAt(-1)).toBe("B");
+  });
+});
+
+describe("pitch — double nommage latin / anglo-saxon", () => {
+  it("noms latins avec altérations", () => {
+    expect(formatNoteLatin(note("C"))).toBe("Do");
+    expect(formatNoteLatin(note("E"))).toBe("Mi");
+    expect(formatNoteLatin(note("F", 1))).toBe("Fa#");
+    expect(formatNoteLatin(note("B", -1))).toBe("Sib");
+    expect(formatNoteLatin(note("G"))).toBe("Sol");
+  });
+  it("formatNoteIn choisit le système", () => {
+    expect(formatNoteIn(note("D"), "latin")).toBe("Ré");
+    expect(formatNoteIn(note("D"), "anglo")).toBe("D");
+  });
+  it("formatNoteBoth affiche les deux, principal d'abord", () => {
+    expect(formatNoteBoth(note("E"), "anglo")).toBe("E (Mi)");
+    expect(formatNoteBoth(note("E"), "latin")).toBe("Mi (E)");
   });
 });
