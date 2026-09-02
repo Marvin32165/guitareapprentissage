@@ -126,7 +126,9 @@ pas partie du bundle de production déployé sur Vercel. Ne pas lancer
 2. ✅ **Moteur musical** — théorie pure en TS (`src/lib/music`) + 42 tests
    Vitest, dont des tests de référence à valeurs codées en dur (harmonisation
    Do/Sol, 5 boîtes pentatoniques La mineur, 7 modes de Do)
-3. ⬜ Composant Fretboard + audio
+3. ✅ **Fretboard + audio** — composant SVG responsive (`src/components/fretboard`)
+   avec orientations verticale/horizontale, code couleur par fonction, notes
+   cliquables (son via Tone.js + nom/degré), et page démo `/demo/fretboard`
 4. ⬜ Module théorie (leçons + exercices)
 5. ⬜ Module oreille
 6. ⬜ Module métronome & technique
