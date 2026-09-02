@@ -44,6 +44,76 @@ export interface FretPosition {
   note: Note;
 }
 
+// Numéros MIDI des cordes à vide, de la 6e (Mi grave) à la 1re (Mi aigu).
+export const OPEN_MIDI = [40, 45, 50, 55, 59, 64];
+
+export function midiAtFret(stringIndex: number, fret: number): number {
+  return OPEN_MIDI[stringIndex] + fret;
+}
+
+export type NoteRole = "root" | "third" | "fifth" | "other";
+
+/** Rôle harmonique d'un degré (pour le code couleur du manche). */
+export function roleOfDegree(semitones: number): NoteRole {
+  const s = ((semitones % 12) + 12) % 12;
+  if (s === 0) return "root";
+  if (s === 3 || s === 4) return "third";
+  if (s === 6 || s === 7 || s === 8) return "fifth";
+  return "other";
+}
+
+const DEGREE_NAMES: Record<number, string> = {
+  0: "1",
+  1: "♭2",
+  2: "2",
+  3: "♭3",
+  4: "3",
+  5: "4",
+  6: "♭5",
+  7: "5",
+  8: "♭6",
+  9: "6",
+  10: "♭7",
+  11: "7",
+};
+
+/** Libellé de degré depuis les demi-tons depuis la fondamentale ("1","♭3"…). */
+export function degreeName(semitones: number): string {
+  return DEGREE_NAMES[((semitones % 12) + 12) % 12];
+}
+
+/**
+ * Positions sur le manche d'un ensemble de notes (gamme, accord ou arpège),
+ * dans une fenêtre de frettes. Sert de source unique au composant Fretboard.
+ */
+export function fretboardPositions(
+  notes: Note[],
+  rootPc: number,
+  { fromFret = 0, toFret = 15 }: { fromFret?: number; toFret?: number } = {},
+): FretPosition[] {
+  const noteByPc = new Map<number, Note>();
+  for (const n of notes) noteByPc.set(pitchClass(n), n);
+  const pcs = new Set(noteByPc.keys());
+
+  const out: FretPosition[] = [];
+  for (let s = 0; s < STANDARD_TUNING.length; s++) {
+    for (let f = fromFret; f <= toFret; f++) {
+      const pc = pitchClassAtFret(s, f);
+      if (!pcs.has(pc)) continue;
+      out.push({
+        stringIndex: s,
+        stringNumber: STRING_NUMBERS[s],
+        fret: f,
+        pc,
+        degreeSemitones: ((pc - rootPc) % 12 + 12) % 12,
+        isRoot: pc === rootPc,
+        note: noteByPc.get(pc)!,
+      });
+    }
+  }
+  return out;
+}
+
 export interface PentatonicBox {
   index: number; // 1..5
   anchorFret: number; // frette de départ sur la 6e corde

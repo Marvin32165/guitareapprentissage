@@ -4,8 +4,12 @@ import {
   pitchClassAtFret,
   scaleFretsOnString,
   pentatonicBoxes,
+  midiAtFret,
+  roleOfDegree,
+  degreeName,
+  fretboardPositions,
 } from "./fretboard";
-import { minorPentatonic } from "./scales";
+import { minorPentatonic, majorScale } from "./scales";
 import { pitchClass } from "./pitch";
 
 describe("fretboard — hauteurs", () => {
@@ -40,5 +44,41 @@ describe("fretboard — boîte 1 pentatonique mineure de La", () => {
     const roots = box1.positions.filter((p) => p.isRoot);
     // La (frette 5) sur la 6e et la 1re corde
     expect(roots.some((p) => p.stringNumber === 6 && p.fret === 5)).toBe(true);
+  });
+});
+
+describe("fretboard — MIDI, rôles et degrés", () => {
+  it("numéros MIDI", () => {
+    expect(midiAtFret(0, 0)).toBe(40); // Mi2
+    expect(midiAtFret(0, 5)).toBe(45); // La2 = 5e corde à vide
+    expect(midiAtFret(5, 0)).toBe(64); // Mi4
+  });
+  it("rôle harmonique par degré", () => {
+    expect(roleOfDegree(0)).toBe("root");
+    expect(roleOfDegree(3)).toBe("third");
+    expect(roleOfDegree(4)).toBe("third");
+    expect(roleOfDegree(7)).toBe("fifth");
+    expect(roleOfDegree(6)).toBe("fifth"); // quinte diminuée
+    expect(roleOfDegree(10)).toBe("other");
+  });
+  it("libellés de degré", () => {
+    expect(degreeName(0)).toBe("1");
+    expect(degreeName(3)).toBe("♭3");
+    expect(degreeName(7)).toBe("5");
+    expect(degreeName(10)).toBe("♭7");
+  });
+});
+
+describe("fretboard — positions d'une gamme", () => {
+  it("Do majeur sur 0..12 : bon nombre de notes et fondamentales", () => {
+    const scale = majorScale(note("C"));
+    const pos = fretboardPositions(scale, pitchClass(note("C")), {
+      fromFret: 0,
+      toFret: 12,
+    });
+    // toutes les positions sont dans la gamme
+    expect(pos.every((p) => scale.some((n) => pitchClass(n) === p.pc))).toBe(true);
+    // Do (fondamentale) présent sur plusieurs cordes
+    expect(pos.filter((p) => p.isRoot).length).toBeGreaterThanOrEqual(3);
   });
 });
