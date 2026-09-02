@@ -1,0 +1,119 @@
+// Schéma Prisma — guitareapprentissage
+// App mono-utilisateur : aucune notion de compte, toutes les données sont globales.
+// Dev : SQLite (file:./dev.db). Prod : Turso (libSQL) via @prisma/adapter-libsql,
+// même dialecte SQLite — la migration est triviale.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─────────────────────────────────────────────────────────────
+// THÉORIE — progression des leçons + répétition espacée (SM-2)
+// Le CONTENU des leçons vit dans le code (src/content/lessons),
+// la base ne stocke que la progression.
+// ─────────────────────────────────────────────────────────────
+
+model LessonProgress {
+  id          String    @id @default(cuid())
+  lessonId    String    @unique // slug d'une leçon "as code"
+  status      String    @default("not_started") // not_started | in_progress | completed
+  completedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+}
+
+/// Une carte de révision espacée par notion (SM-2 simplifié).
+model ReviewItem {
+  id           String    @id @default(cuid())
+  conceptId    String    @unique // ex: "intervalle-tierce-majeure"
+  easeFactor   Float     @default(2.5)
+  intervalDays Int       @default(0)
+  repetitions  Int       @default(0)
+  dueDate      DateTime
+  lastReviewed DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([dueDate])
+}
+
+// ─────────────────────────────────────────────────────────────
+// OREILLE — agrégat par type d'exercice (pour pondérer vers ce
+// qui est raté) ; le détail quotidien vit dans DailyStat.
+// ─────────────────────────────────────────────────────────────
+
+model EarStat {
+  id        String   @id @default(cuid())
+  exercise  String // interval | chord_quality | progression | degree | pitch
+  subtype   String? // ex: "tierce_majeure", "accord_mineur"
+  attempts  Int      @default(0)
+  correct   Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@unique([exercise, subtype])
+}
+
+// ─────────────────────────────────────────────────────────────
+// TECHNIQUE — réglages par exercice + historique de tempo.
+// La définition des exercices vit dans le code.
+// ─────────────────────────────────────────────────────────────
+
+model ExerciseSetting {
+  id         String   @id @default(cuid())
+  exerciseId String   @unique // slug d'un exercice "as code"
+  targetBpm  Int
+  currentBpm Int
+  updatedAt  DateTime @updatedAt
+}
+
+model TempoRecord {
+  id         String   @id @default(cuid())
+  exerciseId String
+  bpm        Int
+  achievedAt DateTime @default(now())
+
+  @@index([exerciseId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// PROGRESSION — sessions de pratique, série de jours, stats.
+// ─────────────────────────────────────────────────────────────
+
+model PracticeSession {
+  id          String    @id @default(cuid())
+  startedAt   DateTime  @default(now())
+  endedAt     DateTime?
+  durationSec Int       @default(0)
+  kind        String? // routine | libre | metronome | oreille | technique
+}
+
+/// Une ligne par jour (date locale) → série de jours + graphes.
+model DailyStat {
+  id          String   @id @default(cuid())
+  date        String   @unique // "YYYY-MM-DD" (heure locale)
+  practiceSec Int      @default(0)
+  lessonsDone Int      @default(0)
+  earAttempts Int      @default(0)
+  earCorrect  Int      @default(0)
+  updatedAt   DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// RÉPERTOIRE — morceaux saisis à la main (titres + notes libres,
+// jamais de tablatures : droits d'auteur).
+// ─────────────────────────────────────────────────────────────
+
+model RepertoireSong {
+  id        String   @id @default(cuid())
+  title     String
+  artist    String?
+  songKey   String? // tonalité, ex: "Am", "G"
+  status    String   @default("learning") // learning | acquired
+  targetBpm Int?
+  notes     String? // notes libres
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
