@@ -6,6 +6,7 @@ export const lesson: Lesson = {
   title: "Le système CAGED",
   goal: "Comprendre pourquoi le manche se découpe en cinq positions qui se répètent, et savoir où sont les fondamentales dans chacune.",
   minutes: 12,
+  concepts: ["caged-formes", "caged-fondamentales"],
   blocks: [
     {
       kind: "prose",
@@ -76,6 +77,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l4-e1",
+        conceptId: "caged-formes",
         kind: "mcq",
         prompt: "Dans quel ordre les cinq formes s'enchaînent-elles en montant le manche ?",
         options: ["C – A – G – E – D", "C – D – E – G – A", "E – A – D – G – C", "G – C – E – A – D"],
@@ -87,6 +89,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l4-e2",
+        conceptId: "caged-formes",
         kind: "mcq",
         prompt: "Combien de positions faut-il pour couvrir tout le manche ?",
         options: ["3", "5", "7", "12"],
@@ -98,6 +101,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l4-e3",
+        conceptId: "caged-fondamentales",
         kind: "fretFind",
         prompt: "Dans la position 1, clique une fondamentale (un Do).",
         spec: { root: "C", kind: "box", boxQuality: "major", boxIndex: 1, labelMode: "note" },
@@ -109,6 +113,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l4-e4",
+        conceptId: "caged-fondamentales",
         kind: "mcq",
         prompt: "Quelle forme a sa fondamentale sur la corde de Ré (4e) ?",
         options: ["La forme de C", "La forme de G", "La forme de D", "La forme de E"],

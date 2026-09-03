@@ -6,6 +6,7 @@ export const lesson: Lesson = {
   title: "La gamme majeure",
   goal: "Construire n'importe quelle gamme majeure avec une seule formule, et comprendre d'où viennent les dièses d'une tonalité.",
   minutes: 10,
+  concepts: ["gamme-majeure-formule", "armures-alterations", "degres"],
   blocks: [
     {
       kind: "prose",
@@ -56,6 +57,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l3-e1",
+        conceptId: "gamme-majeure-formule",
         kind: "mcq",
         prompt: "Quelle est la formule de la gamme majeure ?",
         options: [
@@ -72,6 +74,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l3-e2",
+        conceptId: "armures-alterations",
         kind: "mcq",
         prompt: "Quelle note est altérée dans la gamme de Sol majeur ?",
         options: ["Do♯", "Si♭", "Fa♯", "Mi♭"],
@@ -83,6 +86,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l3-e3",
+        conceptId: "degres",
         kind: "fretFind",
         prompt: "Sur la gamme de Sol majeur, clique le 7e degré (la sensible, Fa♯).",
         spec: { root: "G", kind: "major", fromFret: 0, toFret: 12, labelMode: "degree" },
@@ -94,6 +98,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l3-e4",
+        conceptId: "degres",
         kind: "mcq",
         prompt: "Quel est le 3e degré de la gamme de Do majeur ?",
         options: ["Ré", "Mi", "Fa", "Sol"],

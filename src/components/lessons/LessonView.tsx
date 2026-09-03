@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Fretboard } from "@/components/fretboard/Fretboard";
 import { AudioUnlockButton } from "@/components/audio/AudioProvider";
+import { getConcept } from "@/content/concepts";
 import { resolveSpec } from "@/lib/lessons/spec";
 import type {
   Exercise,
@@ -81,6 +82,19 @@ export function LessonView({
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">{lesson.title}</h1>
         <p className="text-neutral-400">{lesson.goal}</p>
+        {lesson.concepts.length > 0 && (
+          <ul className="flex flex-wrap gap-1.5 pt-1">
+            {lesson.concepts.map((id) => (
+              <li
+                key={id}
+                title={getConcept(id).summary}
+                className="rounded-full bg-neutral-800/80 px-2.5 py-1 text-xs text-neutral-300"
+              >
+                {getConcept(id).label}
+              </li>
+            ))}
+          </ul>
+        )}
         <div className="pt-1">
           <AudioUnlockButton />
         </div>

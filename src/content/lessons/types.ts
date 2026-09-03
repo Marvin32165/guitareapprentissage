@@ -1,3 +1,5 @@
+import type { ConceptId } from "../concepts";
+
 // Contenu des leçons « as code » : 100 % sérialisable (traversé du serveur vers
 // des composants client) et surtout TYPÉ de façon à imposer la règle du projet :
 // une notion s'ancre sur le manche, sur un son, et sur un exercice.
@@ -27,6 +29,12 @@ export interface FretboardSpec {
 export type Exercise =
   | {
       id: string;
+      /**
+       * Notion travaillée. Obligatoire : c'est elle, et non l'exercice, que la
+       * répétition espacée planifiera (phase 7). La rendre facultative
+       * reviendrait à la voir manquer sur la moitié des exercices.
+       */
+      conceptId: ConceptId;
       kind: "mcq";
       prompt: string;
       options: string[];
@@ -35,6 +43,7 @@ export type Exercise =
     }
   | {
       id: string;
+      conceptId: ConceptId;
       kind: "fretFind";
       prompt: string;
       spec: FretboardSpec;
@@ -62,5 +71,7 @@ export interface Lesson {
   /** Une phrase : ce que tu sauras faire à la fin. */
   goal: string;
   minutes: number;
+  /** Notions introduites par cette leçon, dans l'ordre où elles apparaissent. */
+  concepts: ConceptId[];
   blocks: LessonBlock[];
 }

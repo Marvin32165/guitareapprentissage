@@ -429,6 +429,26 @@ Le détail des ajouts par phase est dans la **feuille de route** ci-dessous.
 Ces éléments sont **planifiés** et affectés à une phase précise. On ne code que
 la phase en cours ; tout le reste est documenté ici.
 
+### Fait — notions déclarées (préalable à la répétition espacée)
+
+Chaque exercice déclare la **notion** qu'il travaille (`conceptId`), et chaque
+leçon la liste de celles qu'elle introduit. Le registre est dans
+`src/content/concepts.ts` : étiquette, résumé, et **prérequis**.
+
+Une notion n'est pas une leçon. Une leçon en introduit plusieurs, et une même
+notion est retravaillée plus tard par d'autres exercices. C'est la notion, pas
+l'exercice, que la répétition espacée (phase 7) planifiera — sans quoi réussir
+un QCM ne dirait rien de ce qu'on sait vraiment.
+
+Le champ est **obligatoire dans le typage** : le rendre facultatif reviendrait
+à le voir manquer sur la moitié des exercices. Quatre vérifications
+automatiques l'accompagnent, dont celle qui compte : **aucune leçon ne peut
+s'appuyer sur une notion enseignée plus tard**. Sur un parcours qu'on suit
+seul et dans l'ordre, c'est l'erreur la plus coûteuse, et la plus facile à
+commettre en ajoutant une leçon au milieu.
+
+Les notions travaillées sont affichées en tête de chaque leçon.
+
 ### Fait — complément moteur (phase 2 bis)
 - Harmonisation **mineure** (naturelle, harmonique, mélodique) avec chiffrage
   romain, dérivée du même moteur générique que le majeur.
