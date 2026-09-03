@@ -15,7 +15,11 @@ import { type NoteSystem, formatNote, formatNoteIn } from "@/lib/music/pitch";
 import { pluck } from "@/lib/audio/guitar";
 
 export type Orientation = "horizontal" | "vertical";
-export type LabelMode = "note" | "degree";
+/**
+ * « none » sert aux exercices de lecture : si chaque case porte son nom, la
+ * question « trouve cette note » se résout en lisant l'étiquette.
+ */
+export type LabelMode = "note" | "degree" | "none";
 export type Handed = "right" | "left";
 
 export interface FretboardProps {
@@ -29,6 +33,14 @@ export interface FretboardProps {
   capo?: number;
   handed?: Handed;
   onSelect?: (pos: FretPosition) => void;
+  /**
+   * Position mise en évidence, indépendamment du code couleur par fonction.
+   * C'est ce qui permet à la même note de s'allumer en même temps sur la
+   * portée et sur le manche.
+   */
+  highlight?: { stringIndex: number; fret: number } | null;
+  /** Estompe les positions non mises en évidence. */
+  dimOthers?: boolean;
 }
 
 // Géométrie (unités SVG).
@@ -59,6 +71,8 @@ export function Fretboard({
   fromFret = 0,
   toFret = 15,
   labelMode = "note",
+  highlight = null,
+  dimOthers = false,
   noteSystem = "anglo",
   tuning = STANDARD,
   capo = 0,
@@ -230,9 +244,16 @@ export function Fretboard({
         const style = ROLE_STYLE[role];
         const { x, y } = XY(alongNote(pos.fret), crossString(pos.stringIndex));
         const label =
-          labelMode === "degree"
-            ? degreeName(pos.degreeSemitones)
-            : formatNoteIn(pos.note, noteSystem);
+          labelMode === "none"
+            ? ""
+            : labelMode === "degree"
+              ? degreeName(pos.degreeSemitones)
+              : formatNoteIn(pos.note, noteSystem);
+        const estAllumee =
+          highlight !== null &&
+          highlight.stringIndex === pos.stringIndex &&
+          highlight.fret === pos.fret;
+        const estompee = dimOthers && highlight !== null && !estAllumee;
         return (
           <g
             key={`${pos.stringIndex}-${pos.fret}`}
@@ -259,25 +280,39 @@ export function Fretboard({
             }}
           >
             <circle cx={x} cy={y} r={HIT_R} fill="transparent" />
+            {estAllumee && (
+              <circle
+                cx={x}
+                cy={y}
+                r={CIRCLE_R + 6}
+                fill="none"
+                stroke="#34d399"
+                strokeWidth={3}
+              />
+            )}
             <circle
               cx={x}
               cy={y}
               r={CIRCLE_R}
               fill={style.fill}
-              stroke={pos.isRoot ? "#ffffff" : "none"}
-              strokeWidth={pos.isRoot ? 2 : 0}
+              opacity={estompee ? 0.25 : 1}
+              stroke={pos.isRoot && !estompee ? "#ffffff" : "none"}
+              strokeWidth={pos.isRoot && !estompee ? 2 : 0}
             />
-            <text
-              x={x}
-              y={y}
-              fontSize="11"
-              fontWeight="600"
-              fill={style.text}
-              textAnchor="middle"
-              dominantBaseline="central"
-            >
-              {label}
-            </text>
+            {label && (
+              <text
+                x={x}
+                y={y}
+                fontSize="11"
+                fontWeight="600"
+                fill={style.text}
+                opacity={estompee ? 0.35 : 1}
+                textAnchor="middle"
+                dominantBaseline="central"
+              >
+                {label}
+              </text>
+            )}
           </g>
         );
       })}
