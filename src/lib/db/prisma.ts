@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { resolveDatabaseUrl } from "./resolve-url";
 
 // Client Prisma partagé (singleton en dev pour survivre au HMR).
 // Prisma 7 impose un driver adapter au runtime. On utilise libSQL partout :
@@ -14,7 +15,7 @@ import { PrismaLibSql } from "@prisma/adapter-libsql";
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 export function databaseUrl(): string | undefined {
-  return process.env.TURSO_DATABASE_URL ?? process.env.DATABASE_URL;
+  return resolveDatabaseUrl(process.env);
 }
 
 export function isDatabaseConfigured(): boolean {
