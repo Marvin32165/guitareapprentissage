@@ -1,0 +1,200 @@
+{
+  "slug": "martin",
+  "genere": "2026-09-03",
+  "encodage": {
+    "ogg_opus": "64 kbps mono 48000 Hz",
+    "mp3": "96 kbps mono 48000 Hz"
+  },
+  "correctionHauteur": "rééchantillonnage soxr vers la hauteur tempérée exacte",
+  "notes": 15,
+  "etendueMidi": [
+    40,
+    83
+  ],
+  "poidsTotal": {
+    "ogg": 353431,
+    "mp3": 438420
+  },
+  "entries": [
+    {
+      "midi": 40,
+      "source": "MartinGM2_040__E2_1.wav",
+      "secondes": 4.67,
+      "ecartMesureCents": -6.7,
+      "dispersionCents": 1.7,
+      "correctionAppliquee": 6.7,
+      "octets": {
+        "ogg": 41638,
+        "mp3": 56492
+      }
+    },
+    {
+      "midi": 43,
+      "source": "MartinGM2_043__G2_1.wav",
+      "secondes": 2.014,
+      "ecartMesureCents": -6.2,
+      "dispersionCents": 1.2,
+      "correctionAppliquee": 6.2,
+      "octets": {
+        "ogg": 17725,
+        "mp3": 24812
+      }
+    },
+    {
+      "midi": 46,
+      "source": "MartinGM2_046_Bb2_1.wav",
+      "secondes": 4.487,
+      "ecartMesureCents": -3.9,
+      "dispersionCents": 2.9,
+      "correctionAppliquee": 3.9,
+      "octets": {
+        "ogg": 38729,
+        "mp3": 54476
+      }
+    },
+    {
+      "midi": 49,
+      "source": "MartinGM2_049_Db3_1.wav",
+      "secondes": 2.678,
+      "ecartMesureCents": -6.7,
+      "dispersionCents": 2.4,
+      "correctionAppliquee": 6.7,
+      "octets": {
+        "ogg": 25034,
+        "mp3": 32876
+      }
+    },
+    {
+      "midi": 52,
+      "source": "MartinGM2_052__E3_1.wav",
+      "secondes": 3.685,
+      "ecartMesureCents": -3.5,
+      "dispersionCents": 2.6,
+      "correctionAppliquee": 3.5,
+      "octets": {
+        "ogg": 35529,
+        "mp3": 44972
+      }
+    },
+    {
+      "midi": 55,
+      "source": "MartinGM2_055__G3_1.wav",
+      "secondes": 2.32,
+      "ecartMesureCents": -4.8,
+      "dispersionCents": 1.5,
+      "correctionAppliquee": 4.8,
+      "octets": {
+        "ogg": 23235,
+        "mp3": 28556
+      }
+    },
+    {
+      "midi": 58,
+      "source": "MartinGM2_058_Bb3_1.wav",
+      "secondes": 3.465,
+      "ecartMesureCents": -9.6,
+      "dispersionCents": 1.5,
+      "correctionAppliquee": 9.6,
+      "octets": {
+        "ogg": 33462,
+        "mp3": 42092
+      }
+    },
+    {
+      "midi": 61,
+      "source": "MartinGM2_061_Db4_1.wav",
+      "secondes": 2.936,
+      "ecartMesureCents": -8.3,
+      "dispersionCents": 2.3,
+      "correctionAppliquee": 8.3,
+      "octets": {
+        "ogg": 29401,
+        "mp3": 35756
+      }
+    },
+    {
+      "midi": 64,
+      "source": "MartinGM2_064__E4_1.wav",
+      "secondes": 2.013,
+      "ecartMesureCents": -10.1,
+      "dispersionCents": 3.4,
+      "correctionAppliquee": 10.1,
+      "octets": {
+        "ogg": 21171,
+        "mp3": 24812
+      }
+    },
+    {
+      "midi": 68,
+      "source": "MartinGM2_068_Ab4_1.wav",
+      "secondes": 1.745,
+      "ecartMesureCents": -10.3,
+      "dispersionCents": 0.9,
+      "correctionAppliquee": 10.3,
+      "octets": {
+        "ogg": 19390,
+        "mp3": 21644
+      }
+    },
+    {
+      "midi": 71,
+      "source": "MartinGM2_071__B4_1.wav",
+      "secondes": 1.293,
+      "ecartMesureCents": -11.4,
+      "dispersionCents": 0.5,
+      "correctionAppliquee": 11.4,
+      "octets": {
+        "ogg": 15150,
+        "mp3": 16172
+      }
+    },
+    {
+      "midi": 74,
+      "source": "MartinGM2_074__D5_1.wav",
+      "secondes": 0.946,
+      "ecartMesureCents": -13.5,
+      "dispersionCents": 0.5,
+      "correctionAppliquee": 13.5,
+      "octets": {
+        "ogg": 11002,
+        "mp3": 12140
+      }
+    },
+    {
+      "midi": 77,
+      "source": "MartinGM2_077__F5_1.wav",
+      "secondes": 1.56,
+      "ecartMesureCents": -11.6,
+      "dispersionCents": 0.8,
+      "correctionAppliquee": 11.6,
+      "octets": {
+        "ogg": 19669,
+        "mp3": 19340
+      }
+    },
+    {
+      "midi": 80,
+      "source": "MartinGM2_080_Ab5_1.wav",
+      "secondes": 1.185,
+      "ecartMesureCents": -13.2,
+      "dispersionCents": 0.7,
+      "correctionAppliquee": 13.2,
+      "octets": {
+        "ogg": 13395,
+        "mp3": 15020
+      }
+    },
+    {
+      "midi": 83,
+      "source": "MartinGM2_083__B5_1.wav",
+      "secondes": 0.706,
+      "ecartMesureCents": -12.7,
+      "dispersionCents": 1.2,
+      "correctionAppliquee": 12.7,
+      "octets": {
+        "ogg": 8901,
+        "mp3": 9260
+      }
+    }
+  ]
+}

@@ -25,6 +25,15 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Les échantillons sont immuables : leur nom encode la note, et un
+        // nouveau jeu s'installe dans un nouveau dossier. On peut donc les
+        // mettre en cache agressivement.
+        source: "/audio/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
         // Le service worker ne doit jamais être mis en cache par le navigateur,
         // pour que les mises à jour soient prises en compte immédiatement.
         source: "/sw.js",

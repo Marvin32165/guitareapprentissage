@@ -35,8 +35,8 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Tout sauf : assets Next, icônes, manifest, service worker, favicon,
-    // et les endpoints d'authentification (login/logout).
-    "/((?!_next/static|_next/image|favicon.ico|icons/|manifest.webmanifest|sw.js|api/auth).*)",
+    // Tout sauf : assets Next, icônes, échantillons audio, manifest, service
+    // worker, favicon, et les endpoints d'authentification (login/logout).
+    "/((?!_next/static|_next/image|favicon.ico|icons/|audio/|manifest.webmanifest|sw.js|api/auth).*)",
   ],
 };
