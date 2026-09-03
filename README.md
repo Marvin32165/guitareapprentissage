@@ -323,6 +323,52 @@ Le choix de source se fait sur `/demo/audio` et vaut pour toute l'application
 appareil** — ce qui est cohérent, puisqu'il se juge au casque ou au haut-parleur
 qu'on a sous la main.
 
+### Justesse : ce qui a été mesuré
+
+« La note affichée est-elle exactement la note jouée ? » a été vérifié à trois
+niveaux, parce qu'une erreur peut se loger à chacun.
+
+**1. Théorie** (`src/lib/music/accuracy.test.ts`, dans la suite). Le manche
+affiche un nom calculé par `fretboardPositions` et joue une hauteur calculée
+par `midiAtFret` : deux chemins de code distincts, que rien n'oblige à rester
+d'accord. Le test compare les deux sur **tous** les accordages, capos 0 à 7,
+six cordes, cases 0 à 15, plus les degrés annoncés et les cordes à vide.
+
+**2. Échantillons** (`npm run audit:pitch`, hors suite car il demande ffmpeg).
+Refait le trajet complet — position → nom affiché → MIDI → échantillon choisi →
+vitesse de lecture → **fréquence mesurée** — sur les 96 positions du manche, en
+important les fonctions réelles du moteur plutôt qu'en recopiant leurs formules.
+
+| Source | Écart maximal sur 96 positions |
+| --- | --- |
+| Martin HD28 | **0,1 ct** (corrigée au build) |
+| FluidR3 nylon | 2,3 ct |
+| FluidR3 acier | 4,7 ct |
+| Iowa | 5,5 ct |
+| Hybride | 5,5 ct |
+
+Toutes sous 6 cents, soit très en deçà du seuil d'audibilité. Le trou de
+tessiture d'Iowa est un problème de **timbre**, pas de justesse : une
+transposition reste exacte, seul le son s'étire.
+
+**3. Synthèse de repli.** Là, un vrai défaut. Karplus-Strong fait circuler le
+signal dans une ligne à retard d'un nombre **entier** d'échantillons : les
+hauteurs atteignables sont `cadence / N`, une grille qui s'élargit vers l'aigu
+(29 cents entre deux crans à 740 Hz). Tone arrondit cette longueur **vers le
+haut**, ce qui rend toutes les notes basses — mesuré au navigateur :
+**−23,4 cents sur Fa5**, −22,9 sur Sol5, −21,0 sur Ré5, les valeurs tombant au
+dixième de cent sur la grille `44100/N`.
+
+`pluckFrequency` vise désormais l'entier le **plus proche** au lieu de subir
+l'arrondi par excès : le pire écart passe à **−11,7 cents**, ce qui est la
+limite de la méthode à cette hauteur (une demi-largeur de cran). Aller plus
+loin demanderait une ligne à retard à interpolation, donc un moteur maison —
+disproportionné pour un chemin qui ne sert que si les échantillons manquent.
+
+Au passage, la mesure chiffre la plainte d'origine : à Mi4 la synthèse s'éteint
+en **0,10 s**, contre 0,53 s sur le Mi grave. Une corde pincée d'une vraie
+guitare tient plusieurs secondes.
+
 ### Freesound : ce qui a été trouvé, et ce que je ne peux pas faire d'ici
 
 L'environnement de développement **ne peut pas atteindre Freesound** : la
