@@ -55,11 +55,35 @@ function midiToFreq(midi: number): number {
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
 
+/**
+ * Corrige la justesse de PluckSynth.
+ *
+ * Karplus-Strong fait circuler le signal dans une ligne à retard d'un nombre
+ * ENTIER d'échantillons : les hauteurs réellement atteignables sont donc
+ * `cadence / N`, une grille qui s'élargit vers l'aigu (30 cents d'écart entre
+ * deux crans à 780 Hz). Tone arrondit cette longueur vers le haut — mesuré :
+ * `ceil(cadence / f)` — ce qui rend toutes les notes basses, jusqu'à
+ * −23,5 cents sur Fa5.
+ *
+ * On vise donc l'entier le PLUS PROCHE plutôt que le suivant, en demandant une
+ * fréquence juste au-dessus du cran voulu. L'erreur reste inhérente à la
+ * méthode, mais elle passe d'environ −23 cents à moins de +8.
+ */
+export function pluckFrequency(midi: number, sampleRate: number): number {
+  const target = midiToFreq(midi);
+  const nearest = Math.max(2, Math.round(sampleRate / target));
+  // Un cheveu sous l'entier : `ceil` retombe alors exactement dessus.
+  return sampleRate / (nearest - 0.001);
+}
+
 /** Joue une note (numéro MIDI). Silencieux en cas d'échec (jamais bloquant). */
 export async function playMidi(midi: number, durationSec = 1.4): Promise<void> {
   try {
-    await ensureVoices();
-    nextVoice().triggerAttackRelease(midiToFreq(midi), durationSec);
+    const Tone = await ensureVoices();
+    nextVoice().triggerAttackRelease(
+      pluckFrequency(midi, Tone.getContext().sampleRate),
+      durationSec,
+    );
   } catch {
     /* audio indisponible : on n'interrompt pas l'UI */
   }
@@ -73,8 +97,13 @@ export async function playMidis(
   try {
     const Tone = await ensureVoices();
     const now = Tone.now();
+    const sampleRate = Tone.getContext().sampleRate;
     midis.forEach((m, i) => {
-      nextVoice().triggerAttackRelease(midiToFreq(m), durationSec, now + i * strumSec);
+      nextVoice().triggerAttackRelease(
+        pluckFrequency(m, sampleRate),
+        durationSec,
+        now + i * strumSec,
+      );
     });
   } catch {
     /* idem : non bloquant */

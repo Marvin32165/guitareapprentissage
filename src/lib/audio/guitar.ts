@@ -54,7 +54,21 @@ export function keyToMidi(key: string): number | null {
   return (Number(octave) + 1) * 12 + NOTE_OFFSETS[letter] + alter;
 }
 
-type Layout = { midi: number; url: string }[];
+export type Layout = { midi: number; url: string }[];
+
+/**
+ * Vitesse de lecture pour obtenir `midi` à partir d'un échantillon enregistré
+ * à `sampleMidi`. Exportée pour que l'audit de justesse mesure bien ce que joue
+ * l'application, et non une réécriture de la même formule.
+ */
+export function playbackRateFor(midi: number, sampleMidi: number): number {
+  return Math.pow(2, (midi - sampleMidi) / 12);
+}
+
+/** Table des échantillons d'une source, triée par hauteur. */
+export function sampleLayout(id: SourceId): Layout | null {
+  return layoutOf(id);
+}
 
 function layoutOf(id: SourceId): Layout | null {
   const urls = resolveUrls(getSource(id));
@@ -236,7 +250,7 @@ export async function pluck(options: PluckOptions): Promise<void> {
 
     const source = r.ctx.createBufferSource();
     source.buffer = buffer;
-    source.playbackRate.value = Math.pow(2, (midi - sample.midi) / 12);
+    source.playbackRate.value = playbackRateFor(midi, sample.midi);
 
     const gain = r.ctx.createGain();
     // Égalisation de niveau entre jeux, sinon le plus fort paraît le meilleur.
