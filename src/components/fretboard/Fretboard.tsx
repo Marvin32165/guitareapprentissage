@@ -117,6 +117,11 @@ export function Fretboard({
   );
 
   return (
+    // Le défilement horizontal appartient au composant, pas à ses appelants :
+    // un manche en 15 cases dépasse toujours 375 px, et un appelant qui oublie
+    // l'enveloppe fait déborder la page entière. Mesuré : 436 px de débord sur
+    // /technique avant cette correction.
+    <div className="-mx-1 overflow-x-auto px-1">
     <svg
       width={width}
       height={height}
@@ -317,5 +322,6 @@ export function Fretboard({
         );
       })}
     </svg>
+    </div>
   );
 }

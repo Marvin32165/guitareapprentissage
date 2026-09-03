@@ -289,19 +289,49 @@ et le son du reste de l'application. Six grilles dérivées du moteur d'harmonie
 vérifiées dans huit tonalités. Ni batterie ni basse jouée : une grille qui
 tourne.
 
-### Phase 7 — Progression ⬜ (prochaine étape)
-- Répétition espacée **SM-2**, s'appuyant sur les `conceptId` déjà déclarés.
-- Routine du jour, statistiques, séries.
-- **Analyse de session par le micro, SANS stockage audio** : seules les
-  métriques et le retour rédigé sont sauvegardés.
-  Consigne explicite de l'utilisateur : *« Sois honnête sur les limites. Pas de
-  score global flatteur. »*
-- Export / import JSON.
-- **File d'écritures hors-ligne (outbox IndexedDB)** — notée dès la phase 2,
-  toujours à faire.
-- Répertoire : titres saisis à la main, statut, notes personnelles.
-- Intégration Hooktheory.
-- API Anthropic (`claude-sonnet-4-6`) pour le retour rédigé de session.
+### Phase 7 — Progression ✅
+
+**Répétition espacée SM-2**, implémenté tel que publié, sans « amélioration »
+maison. Les valeurs de référence des tests viennent de la description de
+l'algorithme, pas de l'implémentation. Ce qui est révisé est une **notion**, et
+seulement si la leçon qui l'introduit est terminée. L'auto-évaluation tient en
+trois boutons ; là où la qualité doit être déduite d'un juste/faux, elle
+plafonne à 4 — annoncer « parfait » sur un clic ferait grimper les intervalles
+plus vite que la mémoire.
+
+**Statistiques** : des comptes bruts, **pas de score global**. Série de jours,
+leçons terminées, notions suivies, réponses d'oreille, sept derniers jours.
+
+**Répertoire** : liste saisie à la main avec notes personnelles. Rien n'est
+récupéré ailleurs, aucune tablature n'est engendrée.
+
+**Export / import JSON** : tout est récupérable. L'import fusionne, il ne
+remplace pas.
+
+**File d'écritures hors-ligne** (IndexedDB) : toute écriture alimentant le
+journal survit à une coupure réseau. Un défaut de concurrence a été trouvé en le
+vérifiant pour de bon — deux rejeux simultanés doublaient le journal ; un verrou
+règle le cas.
+
+**Retour rédigé sur une séance** : seuls des nombres quittent l'appareil, jamais
+de son. Pas de note, pas de score ; les limites sont annoncées. Modèle
+`claude-sonnet-5` (le cahier des charges disait `claude-sonnet-4-6` : même
+famille, plus récent, plus capable, moins cher).
+
+**Hooktheory : non fait.** Son API est inaccessible depuis l'environnement de
+développement, comme Freesound. Rien n'a été écrit plutôt que du code jamais
+exécuté contre le vrai service.
+
+---
+
+## 5 bis. Ce qui reste
+
+- **Hooktheory**, si l'accès réseau le permet un jour.
+- **Couches de vélocité** pour le son : aucune source libre n'en propose pour
+  une guitare acoustique. À documenter, pas à simuler.
+- **Bruit de glissé** (*slide noise*), optionnel.
+- Retrait éventuel des sources audio écartées si le poids du dépôt devient
+  gênant — décision prise de les garder pour l'instant.
 
 ---
 

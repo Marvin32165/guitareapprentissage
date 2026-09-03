@@ -296,7 +296,7 @@ export function FretboardDemo() {
       </div>
 
       {/* Manche */}
-      <div className="overflow-x-auto rounded-xl">
+      <div className="rounded-xl">
         <div className={orientation === "vertical" ? "flex justify-center" : "inline-block"}>
           <Fretboard
             positions={positions}
@@ -362,7 +362,7 @@ function Toggle({
           onClick={() => onChange(o.value)}
           aria-pressed={value === o.value}
           className={
-            "min-h-10 rounded-md px-3 text-sm font-medium transition-colors " +
+            "min-h-11 rounded-md px-3 text-sm font-medium transition-colors " +
             (value === o.value
               ? "bg-neutral-800 text-emerald-400"
               : "text-neutral-400 hover:text-neutral-200")

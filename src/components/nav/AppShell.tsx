@@ -60,7 +60,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* ── Colonne principale ── */}
-      <div className="flex min-h-dvh flex-1 flex-col">
+      {/* min-w-0 : sans lui, un enfant flex ne rétrécit pas sous la largeur de
+          son contenu, et un manche en SVG à largeur explicite pousse toute la
+          page à 1072 px dès que la barre latérale apparaît. */}
+      <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
         {/* En-tête (mobile uniquement) */}
         <header className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-800 bg-neutral-950/90 px-4 py-3 backdrop-blur md:hidden">
           <span className="font-semibold text-neutral-100">Guitare</span>
@@ -73,7 +76,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </header>
 
-        <main className="flex-1 px-4 py-5 pb-28 md:px-8 md:py-8 md:pb-10">
+        <main className="min-w-0 flex-1 px-4 py-5 pb-28 md:px-8 md:py-8 md:pb-10">
           <div className="mx-auto w-full max-w-3xl">{children}</div>
         </main>
       </div>
