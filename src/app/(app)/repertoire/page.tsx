@@ -1,19 +1,29 @@
 import type { Metadata } from "next";
-import { ModuleStub } from "@/components/ModuleStub";
+import { prisma, isDatabaseConfigured } from "@/lib/db/prisma";
+import { RepertoireList, type Song } from "@/components/repertoire/RepertoireList";
 
 export const metadata: Metadata = { title: "Répertoire" };
+export const dynamic = "force-dynamic";
 
-export default function RepertoirePage() {
+export default async function RepertoirePage() {
+  const persistance = isDatabaseConfigured();
+  let songs: Song[] = [];
+  if (persistance) {
+    songs = await prisma.repertoireSong
+      .findMany({ orderBy: { updatedAt: "desc" } })
+      .catch(() => []);
+  }
+
   return (
-    <ModuleStub
-      title="Répertoire"
-      intro="Ta liste de morceaux, saisie à la main : titre, tonalité, tempo cible, statut et notes libres. Aucune tablature — uniquement tes propres repères."
-      phase="phase 7"
-      bullets={[
-        "Statut : en cours / acquis",
-        "Tonalité et tempo cible",
-        "Notes libres personnelles",
-      ]}
-    />
+    <div className="space-y-5">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">Répertoire</h1>
+        <p className="mt-2 text-neutral-400">
+          Les morceaux que tu travailles, leur statut, et ce que tu veux te
+          rappeler dessus.
+        </p>
+      </header>
+      <RepertoireList initial={songs} persistance={persistance} />
+    </div>
   );
 }
