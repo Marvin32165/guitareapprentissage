@@ -241,8 +241,7 @@ de volume de 12 dB plutôt qu'une différence de timbre. Les fichiers ne sont pa
 modifiés, la correction est un gain à la lecture.
 
 La comparaison passe par le **même moteur** que le reste de l'application
-(`guitar.ts`, avec traitement par corde et petite pièce) : ce qu'on juge est
-exactement ce qu'on obtiendra.
+(`guitar.ts`) : ce qu'on juge est exactement ce qu'on obtiendra.
 
 **Recommandation, à confirmer à l'oreille : la 6.** Elle est arrivée après la
 construction de la page, en fouillant les dépôts SFZ ouverts sur GitHub. C'est
@@ -269,23 +268,23 @@ Le script écrit un `manifest.json` à côté des fichiers (écart mesuré,
 correction appliquée, durée, poids note par note). Les chiffres de cette
 documentation en sont tirés.
 
-### ⚠️ « Cordes filées / cordes nues » est une approximation, pas du sampling par corde
+### ⚠️ Aucune source n'est échantillonnée corde par corde
 
-À dire clairement, parce que c'est une limite réelle du projet et non un détail
-d'implémentation : **aucune des six sources n'est échantillonnée corde par
-corde.** Toutes donnent *une captation par hauteur*. Concrètement, Mi4 joué
-corde 1 case 0 et Mi4 joué corde 4 case 14 déclenchent le **même fichier**,
-alors que sur une vraie guitare ces deux notes n'ont ni le même timbre, ni la
-même attaque, ni la même durée.
+C'est une limite réelle du projet, pas un détail d'implémentation : **aucune
+des six sources n'est échantillonnée corde par corde.** Toutes donnent *une
+captation par hauteur*. Concrètement, Mi4 joué corde 1 case 0 et Mi4 joué corde
+4 case 14 déclenchent le **même fichier**, alors que sur une vraie guitare ces
+deux notes n'ont ni le même timbre, ni la même attaque, ni la même durée.
 
-Ce qui est prévu à la place est un **traitement spectral appliqué après coup**,
-selon le groupe de cordes visé : léger creux dans le haut médium et extinction
-plus rapide des partiels pour les cordes filées (Mi grave, La, Ré) ; brillance
-et attaque conservées pour les cordes nues (Sol, Si, Mi aigu). C'est un
-**filtrage approximatif**. Il ne recrée pas le timbre réel d'une corde donnée :
-il évite seulement que deux occurrences de la même hauteur sonnent strictement
-à l'identique. Le test « même hauteur, quatre cordes différentes » de
-`/demo/audio` sert à mesurer cet écart à l'oreille.
+Un **filtrage « filées / nues »** a été implémenté pour atténuer ce défaut :
+creux dans le haut médium et extinction plus rapide des partiels sur les cordes
+graves, brillance conservée sur les aiguës. Il a été **comparé à l'aveugle sur
+le cas même où il devait servir** — ce Mi4 aux deux positions, niveaux égalisés,
+côté traité tiré au sort. **Il ne s'entendait pas. Il a donc été retiré.**
+
+C'était le bon test : une approximation qu'on ne distingue pas de son absence
+n'améliore rien et reste du code à maintenir. La limite est donc assumée telle
+quelle, et seul un jeu réellement échantillonné corde par corde la lèverait.
 
 ### Ce qui descend sur le téléphone
 
@@ -316,8 +315,6 @@ d'échantillons ne fait pas :
   raisonne par hauteur et non par corde.
 - **Balayage.** Un accord s'attaque corde après corde, sur 15 à 30 ms, de la
   grave vers l'aiguë (ou l'inverse en coup montant).
-- **Traitement filées / nues.** Voir l'encadré ci-dessus : c'est une
-  approximation par filtrage, pas du sampling par corde.
 - **Petite pièce.** Une convolution courte sur une réponse impulsionnelle
   **calculée à l'exécution** (bruit filtré à décroissance exponentielle) : rien
   à embarquer, donc aucune licence à vérifier. Ce n'est pas une vraie pièce,

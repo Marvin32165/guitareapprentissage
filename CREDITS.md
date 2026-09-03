@@ -186,7 +186,7 @@ qu'elles constituent précisément la zone où Iowa n'a rien.
 
 ---
 
-## Approximation « cordes filées / cordes nues » — ce que c'est, et ce que ce n'est pas
+## Échantillonnage corde par corde : la limite, et le traitement abandonné
 
 Le cahier des charges visait un échantillonnage **corde par corde** : la même
 hauteur jouée sur la corde de La et sur la corde de Sol ne sonne pas pareil
@@ -198,18 +198,18 @@ La seule piste sérieuse — les jeux `Carlos_Vaquero` sur Freesound, dont les
 titres annoncent explicitement « String 1 », « String 2 »… — est sur un site
 que cet environnement ne peut pas atteindre.
 
-Ce qui sera implémenté à la place est un **traitement spectral appliqué après
-coup**, selon le groupe de cordes visé :
+Un **traitement spectral appliqué après coup** a été implémenté pour atténuer
+ce défaut : creux dans le haut médium et extinction plus rapide des partiels sur
+les cordes filées (Mi grave, La, Ré), brillance et attaque conservées sur les
+cordes nues (Sol, Si, Mi aigu).
 
-- cordes **filées** (Mi grave, La, Ré) : léger creux dans le haut médium,
-  extinction un peu plus rapide des partiels aigus ;
-- cordes **nues** (Sol, Si, Mi aigu) : attaque conservée, brillance maintenue.
+Il a été **comparé à l'aveugle sur le cas même où il devait servir** : le même
+Mi4 joué corde 1 case 0 puis corde 4 case 14, niveaux égalisés, côté traité tiré
+au sort. **La différence ne s'est pas entendue, le traitement a été retiré.**
 
-C'est une **approximation par filtrage**, honnêtement moins juste qu'un vrai
-sampling par corde. Elle ne recrée pas le timbre réel d'une corde donnée : elle
-rend seulement moins identiques deux occurrences de la même hauteur sur deux
-cordes différentes. Le test « même hauteur, quatre cordes » de la page de
-comparaison existe pour mesurer cet écart à l'oreille.
+C'était le bon test à faire : une approximation qu'on ne distingue pas de son
+absence n'améliore rien et reste du code à maintenir. La limite est assumée
+telle quelle — seul un jeu réellement échantillonné corde par corde la lèverait.
 
 Si un jeu réellement échantillonné corde par corde est trouvé plus tard, il
 s'ajoute dans `src/lib/audio/sources.ts` comme une entrée de plus, sans toucher

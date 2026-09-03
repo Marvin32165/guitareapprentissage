@@ -1,7 +1,7 @@
 // Moteur de jeu « guitare » : au-dessus d'une source d'échantillons, ce qui
 // distingue une guitare d'un clavier.
 //
-// Quatre choses qu'un simple Sampler ne fait pas :
+// Trois choses qu'un simple Sampler ne fait pas :
 //
 //  1. ÉTOUFFEMENT PAR CORDE — une corde ne peut porter qu'une note à la fois.
 //     Rejouer la corde de Sol coupe ce qu'elle jouait ; les autres continuent.
@@ -11,16 +11,17 @@
 //  2. BALAYAGE — un accord n'est pas un cluster : les cordes sont attaquées
 //     l'une après l'autre, sur 15 à 30 ms selon la vigueur du coup.
 //
-//  3. TRAITEMENT FILÉES / NUES — approximation par filtrage, documentée comme
-//     telle : aucune source libre n'échantillonne corde par corde (voir
-//     CREDITS.md). Cela évite seulement que Mi4 corde 1 et Mi4 corde 4 sonnent
-//     rigoureusement identiques.
-//
-//  4. PETITE PIÈCE — une convolution courte, sur une réponse impulsionnelle
+//  3. PETITE PIÈCE — une convolution courte, sur une réponse impulsionnelle
 //     calculée à l'exécution (bruit filtré à décroissance exponentielle). Pas
 //     de fichier à embarquer, donc pas de licence à vérifier ; en contrepartie
 //     ce n'est pas une vraie pièce, juste de quoi retirer l'aspect « note
 //     posée sur du silence ».
+//
+// Un filtrage « cordes filées / cordes nues » a existé ici. Comparé à l'aveugle
+// sur le cas même où il devait servir — le même Mi4 corde 1 case 0 puis corde 4
+// case 14, qui déclenchent le même fichier —, il ne s'entendait pas. Il a donc
+// été retiré : une approximation qui n'apporte rien reste du code à maintenir.
+// Seul un jeu réellement échantillonné corde par corde résoudrait ce point.
 
 import { startAudio, playMidi } from "./engine";
 import { type SourceId } from "./source-ids";
@@ -43,8 +44,6 @@ function reportFallback(origin: string, error: unknown): void {
 }
 
 export const STRING_COUNT = 6;
-/** Cordes filées (Mi grave, La, Ré) : index 0 à 2. Nues : 3 à 5. */
-const WOUND_STRINGS = 3;
 
 const NOTE_OFFSETS: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 
@@ -97,14 +96,12 @@ export function nearestSample(layout: Layout, midi: number): { midi: number; url
 
 // --------------------------------------------------------------- chaîne audio
 
-type StringChain = { input: GainNode };
-
 type Rig = {
   ctx: BaseAudioContext;
-  strings: StringChain[];
+  /** Entrée commune : convolution en parallèle du signal direct. */
+  bus: GainNode;
   layout: Layout;
   sourceId: SourceId;
-  traitement: boolean;
 };
 
 type ActiveNote = { gain: GainNode; source: AudioBufferSourceNode };
@@ -135,44 +132,8 @@ function buildRoomImpulse(ctx: BaseAudioContext): AudioBuffer {
   return ir;
 }
 
-function buildStringChain(
-  ctx: BaseAudioContext,
-  stringIndex: number,
-  out: AudioNode,
-  traitement: boolean,
-): StringChain {
-  const input = ctx.createGain();
-
-  // Sans traitement, la corde n'est qu'un point d'entrée : c'est la branche
-  // qu'il faut pouvoir comparer à l'aveugle avec l'autre.
-  if (!traitement) {
-    input.connect(out);
-    return { input };
-  }
-
-  const wound = stringIndex < WOUND_STRINGS;
-
-  // Creux dans le haut médium et extinction plus rapide des partiels pour les
-  // cordes filées ; brillance conservée pour les cordes nues.
-  const presence = ctx.createBiquadFilter();
-  presence.type = "peaking";
-  presence.frequency.value = wound ? 2600 : 3200;
-  presence.Q.value = wound ? 0.9 : 0.7;
-  presence.gain.value = wound ? -2.5 : 1.5;
-
-  const top = ctx.createBiquadFilter();
-  top.type = "lowpass";
-  top.frequency.value = wound ? 7000 : 11000;
-  top.Q.value = 0.7;
-
-  input.connect(presence);
-  presence.connect(top);
-  top.connect(out);
-  return { input };
-}
-
 async function ensureRig(sourceId: SourceId): Promise<Rig | null> {
-  if (rig && rig.sourceId === sourceId && rig.traitement === stringTreatment) return rig;
+  if (rig && rig.sourceId === sourceId) return rig;
 
   const layout = await layoutOf(sourceId);
   if (!layout || layout.length === 0) return null;
@@ -204,12 +165,7 @@ async function ensureRig(sourceId: SourceId): Promise<Rig | null> {
   bus.connect(dry);
   bus.connect(convolver);
 
-  const traitement = stringTreatment;
-  const strings = Array.from({ length: STRING_COUNT }, (_, i) =>
-    buildStringChain(ctx, i, bus, traitement),
-  );
-
-  rig = { ctx, strings, layout, sourceId, traitement };
+  rig = { ctx, bus, layout, sourceId };
   return rig;
 }
 
@@ -282,7 +238,7 @@ export async function pluck(options: PluckOptions): Promise<void> {
     gain.gain.linearRampToValueAtTime(level, at + 0.004);
 
     source.connect(gain);
-    gain.connect(r.strings[index].input);
+    gain.connect(r.bus);
     source.start(at);
 
     const natural = buffer.duration / source.playbackRate.value;
@@ -386,27 +342,6 @@ export function muteAll(): void {
   if (!rig) return;
   const at = rig.ctx.currentTime;
   for (let i = 0; i < STRING_COUNT; i++) choke(i, at, 0.05);
-}
-
-// -------------------------------------------- traitement par groupe de cordes
-
-/**
- * Le filtrage filées/nues est une approximation assumée : aucune source libre
- * n'échantillonne corde par corde. Il doit donc pouvoir être coupé, pour être
- * jugé à l'aveugle plutôt que gardé par principe.
- */
-let stringTreatment = true;
-
-export function isStringTreatmentOn(): boolean {
-  return stringTreatment;
-}
-
-/** Change le traitement ; la chaîne est reconstruite au prochain son. */
-export function setStringTreatment(on: boolean): void {
-  if (on === stringTreatment) return;
-  muteAll();
-  stringTreatment = on;
-  rig = null;
 }
 
 // ------------------------------------------------------- source sélectionnée
