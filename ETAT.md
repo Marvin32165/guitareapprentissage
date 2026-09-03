@@ -226,8 +226,9 @@ Ordre décidé : **A → 4b → 4c → 5 → 6 → 7.**
 
 ### Fin du chantier A (petit reliquat)
 - Bruit de glissé (*slide noise*) — optionnel.
-- Encodage définitif du jeu retenu (FluidR3 acier) et retrait éventuel des
-  sources écartées, pour alléger le dépôt.
+- Encodage définitif du jeu retenu (FluidR3 acier). Les sources écartées
+  restent dans le dépôt (décision 1).
+- Retrait du traitement filées/nues s'il ne s'entend pas (décision 2).
 - Couches de vélocité : **bloqué faute de source libre**, à documenter plutôt
   qu'à simuler.
 
@@ -296,14 +297,46 @@ que la mise en place de Turso tienne en un seul copier-coller.
 
 ---
 
-## 8. Sujets ouverts, s'il faut en discuter
+## 8. Décisions prises sur les quatre sujets ouverts
 
-1. **Faut-il retirer les sources audio écartées ?** Elles pèsent ~3,3 Mo dans le
-   dépôt et ne servent plus qu'à refaire la comparaison.
-2. **Le traitement filées/nues vaut-il le coup ?** Il est approximatif par
-   construction. À écouter maintenant que la source est choisie.
-3. **VexFlow en phase 4b** : quelle place exacte pour la portée, sachant que la
-   règle centrale interdit l'abstraction ? La portée doit rester ancrée au manche.
-4. **Analyse de session par micro (phase 7)** : quelle honnêteté sur les limites
-   d'une détection de hauteur par micro de téléphone, et quoi mesurer qui soit
-   réellement utile plutôt que flatteur.
+**1. Sources écartées — gardées dans le dépôt**, mais elles ne doivent partir ni
+dans le bundle client ni dans le précache du service worker. Fait et vérifié :
+SW sans précache et excluant `/audio/`, catalogue chargé dynamiquement au
+premier son, échantillons chargés note par note. Contrôlé au navigateur
+(0 entrée audio dans le cache du SW) et verrouillé par des tests.
+
+**2. Traitement filées/nues — à juger, pas à supposer.** Un test à l'aveugle a
+été construit sur le cas critique : le même Mi4 joué corde 1 case 0 puis corde 4
+case 14, traitement actif contre traitement coupé, niveaux égalisés, côté tiré
+au sort. **En attente du verdict de l'utilisateur.** S'il n'entend pas de
+différence, le traitement est retiré — une approximation qui n'apporte rien est
+de la dette.
+
+**3. VexFlow (phase 4b) — la portée n'apparaît jamais seule.** Composant unique
+portée + manche + son, où la même note s'allume simultanément aux deux endroits.
+Le parcours de lecture demande « trouve cette note sur ta guitare et joue-la »,
+**jamais** « nomme cette note ». Si une vue portée seule devient nécessaire
+quelque part, prévenir l'utilisateur avant de l'implémenter.
+
+**4. Micro (phases 6/7) — honnêteté jusqu'au bout.**
+
+*Mesurable de façon fiable* : fréquence fondamentale d'une note seule tenue
+(monophonique) ; instants d'attaque et régularité du tempo ; conformité des
+notes jouées à une gamme attendue.
+
+*Non fiable, à ne pas prétendre mesurer* : la transcription polyphonique
+(détecter les notes d'un accord gratté dépasse ce qu'on peut faire honnêtement
+avec YIN sur un micro de téléphone) ; la dynamique et les nuances (le contrôle
+automatique de gain des micros de téléphone écrase les écarts de volume) ; le
+son, le toucher, la musicalité — aucune métrique ne les capture.
+
+*Obstacle à traiter en premier* : **la calibration de latence**. Mesurer le
+placement rythmique contre le métronome exige de connaître la latence
+aller-retour, qui va de ~20 ms en filaire à ~300 ms en Bluetooth. Sans
+calibration, toute métrique de timing est du bruit présenté comme une mesure.
+Une procédure de calibration est donc un **prérequis** de tout exercice
+rythmique, et les métriques de timing sont refusées tant qu'elle n'a pas été
+faite : **pas affichées avec un avertissement — pas affichées du tout**.
+
+*Dans tous les cas* : pas de score global, métriques brutes avec leur
+incertitude.

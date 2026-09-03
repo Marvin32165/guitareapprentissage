@@ -4,6 +4,15 @@
  *   - navigations (pages)        → network-first, repli sur le cache
  *   - assets statiques (_next…)  → stale-while-revalidate
  * Les requêtes non-GET et cross-origin ne sont pas interceptées.
+ *
+ * Rien n'est préchargé à l'installation : le cache se remplit de ce qui est
+ * réellement consulté.
+ *
+ * /audio/ est explicitement EXCLU. Le dépôt conserve six jeux d'échantillons
+ * pour pouvoir refaire la comparaison, mais un seul sert ; les précharger
+ * ferait descendre plusieurs mégaoctets d'échantillons écartés sur le
+ * téléphone. Le moteur gère lui-même son cache (`guitare-echantillons-v1`),
+ * à la demande et pour la seule source retenue.
  */
 const CACHE = "gp-cache-v1";
 
@@ -24,6 +33,9 @@ self.addEventListener("activate", (event) => {
 });
 
 function isStaticAsset(url) {
+  // Les échantillons ne passent jamais par ce cache-ci : ils ont le leur,
+  // rempli note par note à mesure qu'on les joue.
+  if (url.pathname.startsWith("/audio/")) return false;
   return (
     url.pathname.startsWith("/_next/") ||
     url.pathname.startsWith("/icons/") ||

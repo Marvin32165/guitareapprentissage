@@ -23,7 +23,11 @@
 //     posée sur du silence ».
 
 import { startAudio, playMidi } from "./engine";
-import { getSource, resolveUrls, trimForUrl, type SourceId } from "./sources";
+import { type SourceId } from "./source-ids";
+
+// Le catalogue (chemins des échantillons de six sources) n'est chargé qu'au
+// premier son : inutile de le faire descendre sur une page qui n'en joue pas.
+const catalogue = () => import("./sources");
 import { loadBuffer } from "./buffers";
 
 /**
@@ -66,11 +70,12 @@ export function playbackRateFor(midi: number, sampleMidi: number): number {
 }
 
 /** Table des échantillons d'une source, triée par hauteur. */
-export function sampleLayout(id: SourceId): Layout | null {
+export function sampleLayout(id: SourceId): Promise<Layout | null> {
   return layoutOf(id);
 }
 
-function layoutOf(id: SourceId): Layout | null {
+async function layoutOf(id: SourceId): Promise<Layout | null> {
+  const { getSource, resolveUrls } = await catalogue();
   const urls = resolveUrls(getSource(id));
   if (!urls) return null;
   const layout: Layout = [];
@@ -99,6 +104,7 @@ type Rig = {
   strings: StringChain[];
   layout: Layout;
   sourceId: SourceId;
+  traitement: boolean;
 };
 
 type ActiveNote = { gain: GainNode; source: AudioBufferSourceNode };
@@ -129,9 +135,22 @@ function buildRoomImpulse(ctx: BaseAudioContext): AudioBuffer {
   return ir;
 }
 
-function buildStringChain(ctx: BaseAudioContext, stringIndex: number, out: AudioNode): StringChain {
-  const wound = stringIndex < WOUND_STRINGS;
+function buildStringChain(
+  ctx: BaseAudioContext,
+  stringIndex: number,
+  out: AudioNode,
+  traitement: boolean,
+): StringChain {
   const input = ctx.createGain();
+
+  // Sans traitement, la corde n'est qu'un point d'entrée : c'est la branche
+  // qu'il faut pouvoir comparer à l'aveugle avec l'autre.
+  if (!traitement) {
+    input.connect(out);
+    return { input };
+  }
+
+  const wound = stringIndex < WOUND_STRINGS;
 
   // Creux dans le haut médium et extinction plus rapide des partiels pour les
   // cordes filées ; brillance conservée pour les cordes nues.
@@ -153,9 +172,9 @@ function buildStringChain(ctx: BaseAudioContext, stringIndex: number, out: Audio
 }
 
 async function ensureRig(sourceId: SourceId): Promise<Rig | null> {
-  if (rig && rig.sourceId === sourceId) return rig;
+  if (rig && rig.sourceId === sourceId && rig.traitement === stringTreatment) return rig;
 
-  const layout = layoutOf(sourceId);
+  const layout = await layoutOf(sourceId);
   if (!layout || layout.length === 0) return null;
 
   await startAudio();
@@ -185,11 +204,12 @@ async function ensureRig(sourceId: SourceId): Promise<Rig | null> {
   bus.connect(dry);
   bus.connect(convolver);
 
+  const traitement = stringTreatment;
   const strings = Array.from({ length: STRING_COUNT }, (_, i) =>
-    buildStringChain(ctx, i, bus),
+    buildStringChain(ctx, i, bus, traitement),
   );
 
-  rig = { ctx, strings, layout, sourceId };
+  rig = { ctx, strings, layout, sourceId, traitement };
   return rig;
 }
 
@@ -254,6 +274,7 @@ export async function pluck(options: PluckOptions): Promise<void> {
 
     const gain = r.ctx.createGain();
     // Égalisation de niveau entre jeux, sinon le plus fort paraît le meilleur.
+    const { trimForUrl } = await catalogue();
     const level =
       Math.max(0.05, Math.min(velocity, 1)) * Math.pow(10, trimForUrl(sample.url) / 20);
     // Attaque très courte plutôt qu'instantanée : évite le clic de démarrage.
@@ -367,9 +388,32 @@ export function muteAll(): void {
   for (let i = 0; i < STRING_COUNT; i++) choke(i, at, 0.05);
 }
 
+// -------------------------------------------- traitement par groupe de cordes
+
+/**
+ * Le filtrage filées/nues est une approximation assumée : aucune source libre
+ * n'échantillonne corde par corde. Il doit donc pouvoir être coupé, pour être
+ * jugé à l'aveugle plutôt que gardé par principe.
+ */
+let stringTreatment = true;
+
+export function isStringTreatmentOn(): boolean {
+  return stringTreatment;
+}
+
+/** Change le traitement ; la chaîne est reconstruite au prochain son. */
+export function setStringTreatment(on: boolean): void {
+  if (on === stringTreatment) return;
+  muteAll();
+  stringTreatment = on;
+  rig = null;
+}
+
 // ------------------------------------------------------- source sélectionnée
 
-let currentSource: SourceId = "martin";
+// Source retenue après comparaison à l'aveugle (cf. README). C'est aussi ce
+// que joue un appareil neuf, avant toute préférence enregistrée.
+let currentSource: SourceId = "fluid-steel";
 
 export function getGuitarSource(): SourceId {
   return currentSource;

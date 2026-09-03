@@ -49,6 +49,7 @@ export default function HomePage() {
         <h2 className="mb-3 text-sm font-medium text-neutral-400">Bac à sable</h2>
         <Link
           href="/demo/audio"
+          prefetch={false}
           className="mb-3 flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900/40 p-4 transition-colors hover:border-neutral-700 hover:bg-neutral-900"
         >
           <span className="rounded-lg bg-neutral-800 p-2 text-emerald-400">

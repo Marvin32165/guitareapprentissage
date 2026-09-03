@@ -103,12 +103,12 @@ function measureHz(path: string, aroundHz: number): number | null {
 
 // -------------------------------------------------------------------- audit
 
-it("chaque position du manche sonne la note qu'elle affiche", { timeout: 600_000 }, () => {
+it("chaque position du manche sonne la note qu'elle affiche", { timeout: 600_000 }, async () => {
 const ffmpeg = ffmpegPath();
 const work = mkdtempSync(join(tmpdir(), "audit-pitch-"));
 // La table et la vitesse de lecture viennent du moteur lui-même : recopier
 // la formule ici reviendrait à vérifier la copie.
-const layout = sampleLayout(SOURCE_ID);
+const layout = await sampleLayout(SOURCE_ID);
 if (!layout) throw new Error(`La source « ${SOURCE_ID} » n'a pas d'échantillons.`);
 
 const tuning = TUNINGS.standard;
