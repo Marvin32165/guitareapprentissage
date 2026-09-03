@@ -53,8 +53,10 @@ export function LatencyCalibration() {
     }
 
     try {
-      const Tone = await import("tone");
-      const ctx = Tone.getContext().rawContext as unknown as BaseAudioContext;
+      // Les clics partent sur le contexte DE LA CAPTURE : comparer un instant
+      // planifié sur une horloge à un instant capté sur une autre ne mesurerait
+      // que l'écart entre les deux horloges.
+      const ctx = capture.context;
       const out = ctx.createGain();
       out.gain.value = 1;
       out.connect(ctx.destination);

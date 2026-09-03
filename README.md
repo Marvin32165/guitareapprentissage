@@ -552,6 +552,41 @@ Les notions travaillées sont affichées en tête de chaque leçon.
 - *Reporté en phase 4* : bibliothèque de **formes d'accords ouverts** (CAGED)
   rendues sur le manche — utile surtout dans les leçons CAGED.
 
+### Accordeur et détection de hauteur — faits
+
+Une note **seule tenue** est la seule chose qu'un micro de téléphone mesure sans
+réserve, et l'accordeur en tire tout ce qu'on peut : nom de note, écart en
+cents, corde probable, et dans quel sens tourner la mécanique. Aucune
+calibration n'est nécessaire — on mesure une fréquence, pas un instant, et la
+latence n'y change rien.
+
+L'interface dit d'emblée qu'un **accord gratté ne donnera rien** : la
+transcription polyphonique dépasse ce qu'une autocorrélation permet
+honnêtement. Quand le signal n'est pas assez périodique, l'affichage
+**s'efface** au lieu de garder une valeur périmée — une note affichée alors
+qu'on ne joue plus se lit comme une mesure.
+
+**Une erreur d'octave trouvée par les tests.** Prendre le maximum de
+l'autocorrélation est faux : un signal de période T corrèle presque aussi bien
+avec 2T ou 3T. Mesuré, un Si3 se lisait **1902 cents trop bas**, soit un tiers
+de sa fréquence — sur un accordeur, c'est fatal. Le choix de pic à la McLeod
+(retenir le premier maximum local qui approche le plus haut, donc le plus petit
+retard) règle le cas, et les tests couvrent les six cordes à vide, toute
+l'étendue du manche, un fondamental affaibli comme sur un petit micro, et du
+bruit blanc — où le détecteur doit refuser de répondre.
+
+**Deux pannes du micro corrigées, dont une invisible en développement :**
+
+- `/worklets/recorder.js` renvoyait **307** : le garde d'authentification
+  l'interceptait, exactement comme il avait intercepté les échantillons audio.
+  `addModule` suivait la redirection vers `/login`, recevait du HTML, et le
+  micro tombait en panne. Un test fige désormais les deux exclusions.
+- `Tone.getContext().rawContext` **n'est pas un `BaseAudioContext` natif** mais
+  un enrobage `standardized-audio-context`, et `new AudioWorkletNode(...)` le
+  refuse. Tout ce qui touche au micro vit maintenant sur un contexte natif
+  dédié — ce qui règle aussi la calibration, dont les clics et la capture
+  partagent enfin une seule horloge.
+
 ### File d'écritures hors-ligne — faite
 
 Notée depuis la phase 2, elle existe. Toute écriture qui alimente le journal
