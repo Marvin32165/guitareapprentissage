@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { RhythmCheck } from "./RhythmCheck";
 import {
   readLatency,
   subscribeLatency,
@@ -45,8 +46,10 @@ export function RhythmGate() {
   }
 
   return (
+    <>
+    <RhythmCheck latence={mesure} />
     <section className="space-y-3 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-4">
-      <h2 className="text-sm font-medium text-neutral-400">Analyse du jeu</h2>
+      <h2 className="text-sm font-medium text-neutral-400">Ce qui est mesuré, et ce qui ne l&apos;est pas</h2>
       <p className="text-sm text-neutral-300">
         Latence connue ({mesure.ms} ms) : les mesures de placement rythmique
         sont possibles sur cet appareil.
@@ -71,10 +74,7 @@ export function RhythmGate() {
           <li>le son, le toucher, la musicalité : aucune métrique ne les capture.</li>
         </ul>
       </div>
-      <p className="text-xs text-neutral-600">
-        Les exercices d&apos;analyse arrivent en phase 7. Pas de score global :
-        des mesures brutes, avec leur incertitude.
-      </p>
     </section>
+    </>
   );
 }
