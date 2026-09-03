@@ -552,6 +552,26 @@ Les notions travaillées sont affichées en tête de chaque leçon.
 - *Reporté en phase 4* : bibliothèque de **formes d'accords ouverts** (CAGED)
   rendues sur le manche — utile surtout dans les leçons CAGED.
 
+### File d'écritures hors-ligne — faite
+
+Notée depuis la phase 2, elle existe. Toute écriture qui alimente le journal
+(`PracticeEvent`, progression de leçon, révision) passe par `postJson` : en cas
+de panne réseau, elle est mise en file dans IndexedDB et repartira au retour de
+la connexion. L'application se sert guitare en main, souvent sans réseau
+fiable — et un journal troué produit un calendrier de révisions faux, puisque
+c'est lui la source de vérité.
+
+Une réponse 4xx est jetée plutôt que rejouée : elle ne passerait jamais, et la
+garder bloquerait la file derrière elle à chaque tentative.
+
+**Un défaut de concurrence trouvé en le vérifiant pour de bon.** En coupant le
+réseau, en répondant à trois questions puis en reconnectant, six événements
+apparaissaient en base au lieu de trois : au retour de la connexion, le
+navigateur émet `online` pendant que le rejeu du montage tourne encore, et les
+deux rejeux lisent la même file. `flushOutbox` porte désormais un verrou, et le
+test reproduit le cas — il vérifie qu'un rejeu non protégé envoie bien deux
+fois, sans quoi il ne prouverait rien.
+
 ### Phase 6 — Métronome, calibration, accompagnements : fait
 
 **Le métronome ne dérive pas.** `setInterval` seul se fait bousculer par le

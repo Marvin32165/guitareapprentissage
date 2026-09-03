@@ -14,6 +14,7 @@ import {
   type EarQuestion,
 } from "@/lib/ear/questions";
 import { assignSequence } from "@/lib/ear/voicing";
+import { postJson } from "@/lib/offline/post";
 
 // Entraînement de l'oreille.
 //
@@ -32,19 +33,13 @@ const LEVELS = [
 type Etat = { phase: "question" } | { phase: "repondu"; choisi: string; juste: boolean };
 
 async function log(question: EarQuestion, correct: boolean) {
-  try {
-    await fetch("/api/practice-event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: `ear_${question.exercise}`,
-        refId: question.subtype,
-        correct,
-      }),
-    });
-  } catch {
-    // Hors-ligne : la session reste utilisable, le compte du jour est local.
-  }
+  // Mise en file si le réseau manque : une réponse perdue fausserait les
+  // statistiques et la pondération des révisions.
+  await postJson("/api/practice-event", {
+    type: `ear_${question.exercise}`,
+    refId: question.subtype,
+    correct,
+  });
 }
 
 export function EarTrainer() {
