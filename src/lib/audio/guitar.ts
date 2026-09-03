@@ -308,12 +308,15 @@ export async function strum(
     spreadMs = 22,
     velocity = 0.8,
     durationSec,
+    time,
     sourceId = currentSource,
   }: {
     direction?: StrumDirection;
     spreadMs?: number;
     velocity?: number;
     durationSec?: number;
+    /** Instant de l'attaque, en temps AudioContext. Par défaut : maintenant. */
+    time?: number;
     sourceId?: SourceId;
   } = {},
 ): Promise<void> {
@@ -321,7 +324,9 @@ export async function strum(
   if (schedule.length === 0) return;
 
   const r = await ensureRig(sourceId);
-  const base = r ? r.ctx.currentTime + 0.02 : 0;
+  // Sans instant explicite, on part maintenant ; avec, on respecte la
+  // planification — un accompagnement planifié à l'avance en dépend.
+  const base = r ? Math.max(time ?? r.ctx.currentTime + 0.02, r.ctx.currentTime) : 0;
 
   await Promise.all(
     schedule.map(({ stringIndex, midi, offsetSec }) =>
