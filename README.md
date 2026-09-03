@@ -552,6 +552,41 @@ Les notions travaillées sont affichées en tête de chaque leçon.
 - *Reporté en phase 4* : bibliothèque de **formes d'accords ouverts** (CAGED)
   rendues sur le manche — utile surtout dans les leçons CAGED.
 
+### Retour rédigé sur une séance — fait
+
+Un bouton, après la mesure de placement rythmique, demande un court retour écrit
+à partir des chiffres obtenus.
+
+**Aucun son n'est transmis.** Le point de terminaison ne reçoit que des
+nombres, déjà calculés dans le navigateur ; le signal du micro n'a jamais quitté
+l'appareil et a été jeté dès les mesures extraites. Un garde côté serveur refuse
+toute charge inhabituelle plutôt que de faire confiance à l'appelant.
+
+Le prompt interdit explicitement toute note, tout score, tout pourcentage de
+progression, et interdit de commenter le son, le toucher ou la musicalité — rien
+de tout cela n'est mesurable par un micro de téléphone. Une mesure dont
+l'incertitude dépasse la valeur doit être annoncée comme telle plutôt
+qu'interprétée.
+
+Seuls **les mesures et le texte** sont enregistrés (`PracticeSession.metrics` et
+`.feedback`), conformément à la contrainte posée.
+
+**Le modèle a été changé, et c'est délibéré.** Le cahier des charges indiquait
+`claude-sonnet-4-6`. L'application utilise `claude-sonnet-5` : même famille,
+plus récent, plus capable, et **moins cher** — 2 $/10 $ par million de jetons
+contre 3 $/15 $.
+
+Sans `ANTHROPIC_API_KEY`, la fonction est simplement indisponible et le dit ; les
+mesures restent affichées telles quelles.
+
+### Hooktheory — non réalisable depuis cet environnement
+
+`api.hooktheory.com` et `hooktheory.com` sont **inaccessibles** depuis
+l'environnement de développement (HTTP 000, même politique réseau qui bloque
+Freesound). Impossible d'inspecter l'API, de vérifier ses conditions
+d'utilisation ni de tester une intégration. Rien n'a donc été écrit : mieux vaut
+une fonctionnalité absente qu'un code jamais exécuté contre le vrai service.
+
 ### Analyse de placement rythmique — faite
 
 Derrière la porte de calibration, et nulle part ailleurs : le composant n'est

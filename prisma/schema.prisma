@@ -110,6 +110,12 @@ model PracticeSession {
   endedAt     DateTime?
   durationSec Int       @default(0)
   kind        String? // routine | libre | metronome | oreille | technique
+
+  /// Mesures brutes de la séance, en JSON. JAMAIS d'audio : le micro sert au
+  /// calcul, le signal est jeté, et seuls les nombres arrivent ici.
+  metrics  String?
+  /// Retour rédigé à partir de ces mesures. Texte, pas de note ni de score.
+  feedback String?
 }
 
 /// Une ligne par jour (date locale) → série de jours + graphes.

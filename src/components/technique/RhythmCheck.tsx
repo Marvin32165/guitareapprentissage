@@ -174,7 +174,47 @@ function Resultat({
   analyse: RhythmAnalysis;
   onRejouer: () => void;
 }) {
+  const [retour, setRetour] = useState<string | null>(null);
+  const [erreurRetour, setErreurRetour] = useState<string | null>(null);
+  const [enCours, setEnCours] = useState(false);
   const lisible = isInterpretable(analyse);
+
+  async function demanderRetour() {
+    setEnCours(true);
+    setErreurRetour(null);
+    try {
+      // On n'envoie QUE des nombres. Le signal du micro n'a jamais quitté
+      // l'appareil et a déjà été jeté.
+      const res = await fetch("/api/session-analysis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "technique",
+          metrics: {
+            exercice: "placement rythmique",
+            placementMedianMs: Math.round(analyse.medianOffsetMs),
+            dispersionMs: Math.round(analyse.spreadMs),
+            incertitudeCalibrationMs: Math.round(analyse.uncertaintyMs),
+            attaquesRetenues: analyse.detected,
+            tempsProposes: analyse.expected,
+            biaisInterpretable: biasIsMeaningful(analyse),
+            nonMesure: [
+              "notes d'un accord gratté (transcription polyphonique)",
+              "dynamique et nuances (gain automatique du micro)",
+              "son, toucher, musicalité",
+            ],
+          },
+        }),
+      });
+      const json = await res.json();
+      if (json.ok) setRetour(json.feedback);
+      else setErreurRetour(json.error ?? "Retour indisponible.");
+    } catch {
+      setErreurRetour("Retour indisponible : pas de réseau.");
+    } finally {
+      setEnCours(false);
+    }
+  }
   const biais = biasIsMeaningful(analyse);
   const devant = analyse.medianOffsetMs < 0;
 
@@ -227,6 +267,39 @@ function Resultat({
             {analyse.uncertaintyMs.toFixed(0)} ms.
           </p>
         </>
+      )}
+
+      {lisible && !retour && (
+        <button
+          type="button"
+          onClick={() => void demanderRetour()}
+          disabled={enCours}
+          className={
+            "min-h-11 w-full rounded-xl px-4 text-sm font-medium transition-colors " +
+            (enCours
+              ? "cursor-wait bg-neutral-800 text-neutral-400"
+              : "bg-emerald-600 text-white hover:bg-emerald-500")
+          }
+        >
+          {enCours ? "Rédaction…" : "Demander un retour écrit"}
+        </button>
+      )}
+
+      {retour && (
+        <div className="space-y-2 rounded-xl border border-neutral-800 bg-neutral-900/60 p-4">
+          <p className="whitespace-pre-wrap text-sm text-neutral-200">{retour}</p>
+          <p className="text-xs text-neutral-600">
+            Rédigé à partir des chiffres ci-dessus, et d&apos;eux seuls. Aucun son
+            n&apos;a été transmis : seules les mesures sont sorties de
+            l&apos;appareil.
+          </p>
+        </div>
+      )}
+
+      {erreurRetour && (
+        <p className="rounded-xl border border-amber-800/60 bg-amber-950/20 px-4 py-3 text-sm text-amber-200">
+          {erreurRetour} Les mesures restent valables telles quelles.
+        </p>
       )}
 
       <button
