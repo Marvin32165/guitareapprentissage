@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { getConcept, type ConceptId } from "@/content/concepts";
 import { LESSONS } from "@/content/lessons";
+import { postJson } from "@/lib/offline/post";
 
 // Session de révision.
 //
@@ -40,20 +41,18 @@ export function ReviewSession({ concepts }: ReviewSessionProps) {
   const repondre = useCallback(
     async (quality: number) => {
       const conceptId = concepts[index];
-      try {
-        const res = await fetch("/api/review", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ conceptId, quality }),
-        });
-        const json = await res.json();
+      const res = await postJson("/api/review", { conceptId, quality });
+      if (res.sent) {
+        const next = (res.body as { next?: { intervalDays?: number } } | null)?.next;
         setDernier(
-          json?.next?.intervalDays
-            ? `À revoir dans ${json.next.intervalDays} jour${json.next.intervalDays > 1 ? "s" : ""}.`
+          next?.intervalDays
+            ? `À revoir dans ${next.intervalDays} jour${next.intervalDays > 1 ? "s" : ""}.`
             : null,
         );
-      } catch {
-        setDernier(null);
+      } else {
+        // Hors-ligne : la révision partira au retour du réseau, mais on ne peut
+        // pas annoncer une échéance que le serveur n'a pas encore calculée.
+        setDernier(res.queued ? "Enregistrée : elle partira au retour du réseau." : null);
       }
       setRevele(false);
       setIndex((i) => i + 1);

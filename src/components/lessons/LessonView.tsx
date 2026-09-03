@@ -8,6 +8,7 @@ import { getChordShape } from "@/lib/music/chord-shapes";
 import { AudioUnlockButton } from "@/components/audio/AudioProvider";
 import { getConcept } from "@/content/concepts";
 import { resolveSpec } from "@/lib/lessons/spec";
+import { postJson } from "@/lib/offline/post";
 import type {
   Exercise,
   FretboardSpec,
@@ -17,15 +18,10 @@ import type {
 import type { FretPosition } from "@/lib/music/fretboard";
 
 async function log(path: string, body: unknown) {
-  try {
-    await fetch(path, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-  } catch {
-    /* hors-ligne : la leçon reste lisible, la progression repartira plus tard */
-  }
+  // Hors-ligne, l'écriture est mise en file plutôt que perdue : le journal sert
+  // de source de vérité à la répétition espacée, et un journal troué produit un
+  // calendrier faux.
+  await postJson(path, body);
 }
 
 export function LessonView({
