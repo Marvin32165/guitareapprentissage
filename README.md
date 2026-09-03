@@ -502,7 +502,7 @@ comparables sur `/demo/audio`, en attente du verdict à l'oreille), puis
 **chantier B** — déclaration des `conceptId` dans le typage des leçons, en
 prévision de la répétition espacée — puis 4b, 4c, 5, 6, 7.
 5. ✅ **Module oreille** — intervalles, qualités d'accord, degrés, conversion latin ↔ anglo
-6. ⬜ Module métronome & technique (+ détection micro, backing tracks échantillonnés) — prochaine étape
+6. 🔄 **Module technique** — métronome et calibration de latence faits ; backing tracks en cours
 7. ⬜ Module progression (répétition espacée, routine, stats, répertoire,
    analyse de session, export/import JSON)
 8. ⬜ Déploiement final
@@ -551,6 +551,42 @@ Les notions travaillées sont affichées en tête de chaque leçon.
   principal ; le relevé de note affiche les deux (« Mi (E) »).
 - *Reporté en phase 4* : bibliothèque de **formes d'accords ouverts** (CAGED)
   rendues sur le manche — utile surtout dans les leçons CAGED.
+
+### Phase 6 — Métronome, calibration : fait (backing tracks à suivre)
+
+**Le métronome ne dérive pas.** `setInterval` seul se fait bousculer par le
+rendu, le ramasse-miettes ou un onglet en arrière-plan, et la dérive s'entend au
+bout de quelques minutes. Un `setInterval` grossier ne sert donc qu'à **planifier
+à l'avance** des événements datés sur l'horloge de l'AudioContext, qui elle ne
+dérive pas. Le repère visuel est retardé jusqu'à l'instant où le clic sonne
+vraiment — comparer un temps AudioContext à `performance.now()` mélangerait deux
+horloges qui ne partent pas du même zéro.
+
+**La calibration de latence est un prérequis, pas une option.** L'application
+émet huit clics par le haut-parleur et les réenregistre par le micro : l'écart
+mesure la chaîne complète — tampon de sortie, haut-parleur, air, micro, tampon
+d'entrée — **sans faire intervenir le temps de réaction de l'utilisateur**. On
+mesure la machine, pas la personne.
+
+Les trois traitements que les navigateurs appliquent par défaut au micro sont
+coupés : l'annulation d'écho supprimerait précisément le son qu'on cherche à
+réentendre, le contrôle automatique de gain écraserait les niveaux, la réduction
+de bruit rognerait les attaques. Un micro « amélioré » ne mesure rien.
+
+Le détecteur a été vérifié contre des retards **connus** : sur un signal de
+synthèse, il retrouve 20, 45, 90, 180 et 300 ms à moins de 3 ms près, y compris
+en environnement bruyant. Une mesure trop dispersée (±12 ms) ou fondée sur moins
+de quatre clics est **rejetée** plutôt que présentée comme un résultat.
+
+**Sans calibration, aucune métrique de placement rythmique n'est affichée** —
+pas assortie d'un avertissement : pas affichée. Un chiffre accompagné d'une
+réserve reste un chiffre : on le retient, on le compare, on s'en sert. Sans
+latence connue, il ne mesure rien. À 120 bpm une double croche dure 125 ms,
+quand la latence va de 20 à 300 : l'écart affiché viendrait autant du téléphone
+que du jeu.
+
+La page dit aussi, avant même de commencer, **ce qui ne sera jamais mesuré** :
+les notes d'un accord gratté, la dynamique, le son et le toucher.
 
 ### Phase 5 — Oreille : fait
 
