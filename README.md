@@ -120,10 +120,13 @@ n'est pas encore mémorisée (un bandeau te le rappelle dans l'app).
    ```bash
    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
    ```
-2. vercel.com → **Add New… → Project** → importer `guitareapprentissage`.
+2. Sur GitHub → dépôt → **Settings → General → Default branch** → basculer sur
+   **`main`**. (Sans ça, Vercel suivrait la branche de travail et tes futurs
+   déploiements ne partiraient pas de `main`.)
+3. vercel.com → **Add New… → Project** → importer `guitareapprentissage`.
    Framework Next.js détecté, aucun réglage de build à changer.
-3. Settings → Git → **Production Branch : `main`**.
-4. Settings → Environment Variables (*Production*) :
+   Vérifier ensuite Settings → Git → **Production Branch : `main`**.
+4. Environment Variables (*Production*) — renseignables dès l'import :
 
    | Variable | Valeur |
    | --- | --- |
