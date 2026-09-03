@@ -262,6 +262,42 @@ il évite seulement que deux occurrences de la même hauteur sonnent strictement
 à l'identique. Le test « même hauteur, quatre cordes différentes » de
 `/demo/audio` sert à mesurer cet écart à l'oreille.
 
+### Le moteur de jeu (`src/lib/audio/guitar.ts`)
+
+Au-dessus de la source choisie, quatre choses qu'un simple lecteur
+d'échantillons ne fait pas :
+
+- **Étouffement par corde.** Une corde ne porte qu'une note à la fois :
+  rejouer la corde de Sol coupe ce qu'elle tenait, les autres continuent de
+  sonner. C'est pour ça que chaque pincement pilote son propre
+  `AudioBufferSourceNode` au lieu de passer par un `Tone.Sampler`, qui
+  raisonne par hauteur et non par corde.
+- **Balayage.** Un accord s'attaque corde après corde, sur 15 à 30 ms, de la
+  grave vers l'aiguë (ou l'inverse en coup montant).
+- **Traitement filées / nues.** Voir l'encadré ci-dessus : c'est une
+  approximation par filtrage, pas du sampling par corde.
+- **Petite pièce.** Une convolution courte sur une réponse impulsionnelle
+  **calculée à l'exécution** (bruit filtré à décroissance exponentielle) : rien
+  à embarquer, donc aucune licence à vérifier. Ce n'est pas une vraie pièce,
+  juste de quoi enlever l'effet « note posée sur du silence ».
+
+Le chargement est **paresseux** : seul l'échantillon le plus proche de la note
+demandée est téléchargé, puis conservé dans le **Cache API**
+(`guitare-echantillons-v1`), donc conservé d'une session à l'autre. Un premier
+appui sur le manche déclenche une requête, pas quinze.
+
+Le repli sur la synthèse reste actif à chaque étage — un appui ne doit jamais
+produire de silence — mais il est désormais **signalé en console hors
+production**. Ce silence délibéré avait masqué un vrai bug : le moteur se
+branchait sur `Tone.getDestination().input`, qui est un nœud Tone et non un
+nœud Web Audio natif, et toutes les notes retombaient sur la synthèse sans
+que rien ne le dise.
+
+Le choix de source se fait sur `/demo/audio` et vaut pour toute l'application
+(manche interactif compris) ; il est mémorisé en `localStorage`, donc **par
+appareil** — ce qui est cohérent, puisqu'il se juge au casque ou au haut-parleur
+qu'on a sous la main.
+
 ### Freesound : ce qui a été trouvé, et ce que je ne peux pas faire d'ici
 
 L'environnement de développement **ne peut pas atteindre Freesound** : la

@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { AudioUnlockButton } from "@/components/audio/AudioProvider";
 import { SOURCES, getSource, type SourceId } from "@/lib/audio/sources";
 import { playFromSource, playSequence } from "@/lib/audio/sampler";
+import {
+  getServerSourceSnapshot,
+  getSourceSnapshot,
+  storeSource,
+  subscribeSource,
+} from "@/lib/audio/preference";
 import { TUNINGS, STRING_NUMBERS, midiAtFret } from "@/lib/music/fretboard";
 
 const FRETS = [0, 5, 12, 15];
@@ -19,6 +25,11 @@ export function AudioCompare() {
   const [gains, setGains] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [loaded, setLoaded] = useState<Record<string, boolean>>({});
+  const retenue = useSyncExternalStore(
+    subscribeSource,
+    getSourceSnapshot,
+    getServerSourceSnapshot,
+  );
 
   const current = getSource(source);
   const gainDb = gains[source] ?? 0;
@@ -193,6 +204,29 @@ export function AudioCompare() {
             detail="Mi4 joué corde 1 case 0, corde 2 case 5, corde 3 case 9, corde 4 case 14. Avec des échantillons par note, les quatre sonnent à l'identique : c'est la limite à laquelle le traitement par groupe de cordes tentera de répondre."
           />
         </div>
+      </section>
+
+      {/* Adoption de la source pour toute l'application */}
+      <section className="space-y-2">
+        <button
+          type="button"
+          onClick={() => storeSource(source)}
+          disabled={retenue === source}
+          className={
+            "min-h-11 w-full rounded-xl px-4 text-sm font-medium transition-colors " +
+            (retenue === source
+              ? "cursor-default border border-emerald-700/60 bg-emerald-900/20 text-emerald-300"
+              : "bg-emerald-600 text-white hover:bg-emerald-500")
+          }
+        >
+          {retenue === source
+            ? `✓ ${current.label} est la source de l'application`
+            : `Adopter ${current.label} dans toute l'application`}
+        </button>
+        <p className="text-xs text-neutral-600">
+          Le choix est mémorisé sur cet appareil uniquement, et s&apos;applique au
+          manche interactif comme aux leçons.
+        </p>
       </section>
 
       <p className="rounded-xl border border-neutral-800 bg-neutral-900/40 px-4 py-3 text-sm text-neutral-400">

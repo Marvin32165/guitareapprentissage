@@ -12,7 +12,7 @@ import {
   STRING_NUMBERS,
 } from "@/lib/music/fretboard";
 import { type NoteSystem, formatNote, formatNoteIn } from "@/lib/music/pitch";
-import { playMidi } from "@/lib/audio/engine";
+import { pluck } from "@/lib/audio/guitar";
 
 export type Orientation = "horizontal" | "vertical";
 export type LabelMode = "note" | "degree";
@@ -241,13 +241,19 @@ export function Fretboard({
             aria-label={`${formatNote(pos.note)}, degré ${degreeName(pos.degreeSemitones)}, corde ${pos.stringNumber} frette ${pos.fret}`}
             style={{ cursor: "pointer" }}
             onClick={() => {
-              void playMidi(midiAtFret(pos.stringIndex, pos.fret, tuning, capo));
+              void pluck({
+                stringIndex: pos.stringIndex,
+                midi: midiAtFret(pos.stringIndex, pos.fret, tuning, capo),
+              });
               onSelect?.(pos);
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                void playMidi(midiAtFret(pos.stringIndex, pos.fret, tuning, capo));
+                void pluck({
+                  stringIndex: pos.stringIndex,
+                  midi: midiAtFret(pos.stringIndex, pos.fret, tuning, capo),
+                });
                 onSelect?.(pos);
               }
             }}
