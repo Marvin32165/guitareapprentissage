@@ -1,21 +1,25 @@
 import type { Metadata } from "next";
-import { ModuleStub } from "@/components/ModuleStub";
+import { Metronome } from "@/components/technique/Metronome";
+import { LatencyCalibration } from "@/components/technique/LatencyCalibration";
+import { RhythmGate } from "@/components/technique/RhythmGate";
 
 export const metadata: Metadata = { title: "Technique" };
 
 export default function TechniquePage() {
   return (
-    <ModuleStub
-      title="Exercices techniques"
-      intro="Un métronome précis (ordonnancement par lookahead, jamais setInterval) et une bibliothèque d'exercices chronométrés."
-      phase="phase 6"
-      bullets={[
-        "Métronome : accents, subdivisions, accélération progressive",
-        "Chromatismes, changements d'accords, arpèges",
-        "Transitions CAGED, patterns de gammes",
-        "Tempo cible, tempo actuel, historique des tempos atteints",
-        "Minuteur de session avec objectif de durée",
-      ]}
-    />
+    <div className="space-y-5">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">Technique</h1>
+        <p className="mt-2 text-neutral-400">
+          Le métronome fonctionne tout de suite. Les mesures de placement
+          rythmique, elles, exigent une calibration — sans quoi elles ne
+          mesureraient rien.
+        </p>
+      </header>
+
+      <Metronome />
+      <RhythmGate />
+      <LatencyCalibration />
+    </div>
   );
 }
