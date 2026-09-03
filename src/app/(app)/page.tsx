@@ -63,6 +63,20 @@ export default function HomePage() {
           </span>
         </Link>
         <Link
+          href="/demo/portee"
+          className="mb-3 flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900/40 p-4 transition-colors hover:border-neutral-700 hover:bg-neutral-900"
+        >
+          <span className="rounded-lg bg-neutral-800 p-2 text-emerald-400">
+            <Icon name="theory" className="h-5 w-5" />
+          </span>
+          <span>
+            <span className="block font-medium text-neutral-100">Lire sur le manche</span>
+            <span className="mt-0.5 block text-sm text-neutral-500">
+              La portée, le manche et le son ensemble — jamais l&apos;un sans les autres.
+            </span>
+          </span>
+        </Link>
+        <Link
           href="/demo/fretboard"
           className="flex items-center gap-3 rounded-xl border border-neutral-800 bg-neutral-900/40 p-4 transition-colors hover:border-neutral-700 hover:bg-neutral-900"
         >

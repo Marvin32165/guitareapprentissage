@@ -493,7 +493,7 @@ pas partie du bundle de production déployé sur Vercel. Ne pas lancer
 4. **Module théorie — découpé en trois**
    - 4a ✅ **Parcours + 4 premières leçons + exercices** (notes sur le manche,
      intervalles, gamme majeure, CAGED) **→ déploiement Vercel + Turso**
-   - 4b ⬜ Notation sur portée (VexFlow) + parcours de lecture
+   - 4b ✅ **Notation sur portée (VexFlow) + parcours de lecture**
    - 4c ⬜ Les 7 leçons restantes + formes d'accords ouverts (CAGED)
 
 **Ordre de travail en cours** (priorité : résultat abouti plutôt que mise en
@@ -552,9 +552,43 @@ Les notions travaillées sont affichées en tête de chaque leçon.
 - *Reporté en phase 4* : bibliothèque de **formes d'accords ouverts** (CAGED)
   rendues sur le manche — utile surtout dans les leçons CAGED.
 
-### Phase 4b — Notation sur portée : contraintes imposées
+### Phase 4b — Notation sur portée : fait, et comment
 
-Décidé par l'utilisateur, non négociable sans le prévenir :
+Page `/demo/portee`, deux onglets : **Explorer** (touche une case, la note
+s'allume sur la portée et sonne) et **S'entraîner** (le parcours de lecture).
+
+**Le piège de cette phase, traité explicitement** : la guitare est un instrument
+**transpositeur**. Sa musique s'écrit **une octave au-dessus de ce qu'elle
+sonne**, en clé de sol avec un 8 sous la clé. Le Mi grave à vide sonne un Mi2
+mais s'écrit à la place d'un Mi3 — sous trois lignes supplémentaires. Une portée
+qui ignore ça est juste sur le papier et fausse d'une octave pour qui apprend à
+lire, et c'est une erreur qu'un débutant ne peut pas détecter seul. Le décalage
+vit dans `src/lib/notation/staff.ts` et les six cordes à vide sont vérifiées
+contre leurs positions écrites de référence (`e/3 a/3 d/4 g/4 b/4 e/5`).
+
+L'octave écrite se déduit de la **lettre**, pas du numéro MIDI divisé par
+douze : Si♯3 et Do4 sonnent pareil sans s'écrire dans la même octave.
+
+**La hauteur de la portée n'est pas fixée à l'avance.** Mesuré : une portée
+dimensionnée « à vue » coupait le dessin, qui s'étendait de −12 à 253 pixels
+dans un cadre de 160. Le composant dessine d'abord, mesure ensuite, et cadre sur
+ce qui a réellement été tracé — ce qui règle du même coup l'adaptation du 375 px
+au grand écran.
+
+Pendant une question, **le manche n'affiche aucun nom** (`labelMode="none"`) :
+sinon « trouve cette note » se résout en lisant les étiquettes. Elles
+réapparaissent après la réponse. Une même hauteur existant à plusieurs endroits,
+**toutes ces positions comptent juste** — c'est précisément ce que l'exercice
+apprend, et un test vérifie qu'aucune question n'est sans réponse dans la
+fenêtre affichée.
+
+En cas d'erreur, la note visée et celle jouée sont montrées **ensemble** sur la
+portée, vert contre orange, avec un bouton pour réécouter la bonne : c'est
+l'écart qui s'apprend, pas le verdict.
+
+**Aucune vue « portée seule » n'a été nécessaire.**
+
+Contraintes d'origine, rappelées ici parce qu'elles tiennent pour la suite :
 
 - **La portée n'apparaît jamais seule.** Un composant unique porte la portée,
   le manche et le son ensemble ; **la même note s'allume simultanément aux deux

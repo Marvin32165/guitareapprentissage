@@ -231,10 +231,21 @@ Ordre décidé : **A → 4b → 4c → 5 → 6 → 7.**
 - Couches de vélocité : **bloqué faute de source libre**, à documenter plutôt
   qu'à simuler.
 
-### Phase 4b — Notation sur portée ⬜ (prochaine étape)
-VexFlow (choisi plutôt qu'abcjs), parcours de lecture de notes.
+### Phase 4b — Notation sur portée ✅
+VexFlow 5, page `/demo/portee` : onglet **Explorer** (toucher une case allume la
+note sur la portée et la joue) et onglet **S'entraîner** (parcours de lecture).
 
-### Phase 4c — Les 7 leçons restantes ⬜
+La contrainte « la portée n'apparaît jamais seule » est tenue : aucune vue
+portée isolée n'a été nécessaire. La consigne est toujours « trouve cette note
+sur ta guitare et joue-la », et pendant la question le manche n'affiche aucun
+nom — sinon l'exercice se résoudrait en lisant les étiquettes.
+
+Le piège traité : la guitare s'écrit **une octave au-dessus de ce qu'elle
+sonne**. Le Mi grave à vide sonne un Mi2 et s'écrit Mi3, sous trois lignes
+supplémentaires. L'octave écrite se déduit de la lettre et non du MIDI divisé
+par douze (Si♯3 et Do4 sonnent pareil sans s'écrire pareil).
+
+### Phase 4c — Les 7 leçons restantes ⬜ (prochaine étape)
 Gamme mineure, accords, harmonisation, progressions, pentatoniques, modes,
 tensions. Plus les formes d'accords ouverts (CAGED).
 Le typage `conceptId` est prêt : les nouvelles notions s'ajoutent au registre
