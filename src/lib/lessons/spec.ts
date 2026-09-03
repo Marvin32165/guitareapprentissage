@@ -23,7 +23,9 @@ export interface ResolvedSpec {
 /** Transforme une spec de leçon (données) en positions réelles sur le manche. */
 export function resolveSpec(spec: FretboardSpec): ResolvedSpec {
   const root = parseNote(spec.root);
-  const rootPc = pitchClass(root);
+  // Les degrés peuvent se compter depuis une autre note que la fondamentale de
+  // la gamme : c'est la définition même d'un mode.
+  const rootPc = pitchClass(parseNote(spec.degreeRoot ?? spec.root));
 
   let positions: FretPosition[];
   let fromFret = spec.fromFret ?? 0;

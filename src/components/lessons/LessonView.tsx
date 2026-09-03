@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Fretboard } from "@/components/fretboard/Fretboard";
+import { ChordDiagram } from "@/components/fretboard/ChordDiagram";
+import { getChordShape } from "@/lib/music/chord-shapes";
 import { AudioUnlockButton } from "@/components/audio/AudioProvider";
 import { getConcept } from "@/content/concepts";
 import { resolveSpec } from "@/lib/lessons/spec";
@@ -215,6 +217,8 @@ function Block({
       );
     case "fretboard":
       return <FretboardBlock caption={block.caption} spec={block.spec} />;
+    case "chords":
+      return <ChordsBlock caption={block.caption} shapeIds={block.shapeIds} />;
     case "exercise":
       return (
         <ExerciseBlock
@@ -224,6 +228,23 @@ function Block({
         />
       );
   }
+}
+
+function ChordsBlock({ caption, shapeIds }: { caption?: string; shapeIds: string[] }) {
+  return (
+    <figure className="space-y-2">
+      {/* Grille souple : deux diagrammes tiennent côte à côte dès 375 px. */}
+      <div className="flex flex-wrap gap-2">
+        {shapeIds.map((id) => (
+          <ChordDiagram key={id} shape={getChordShape(id)} />
+        ))}
+      </div>
+      <figcaption className="text-sm text-neutral-500">
+        {caption ? `${caption} ` : ""}
+        <span className="text-neutral-600">Touche un diagramme pour l&apos;entendre.</span>
+      </figcaption>
+    </figure>
+  );
 }
 
 function FretboardBlock({ caption, spec }: { caption?: string; spec: FretboardSpec }) {

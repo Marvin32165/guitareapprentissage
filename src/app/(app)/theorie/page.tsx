@@ -80,10 +80,6 @@ export default async function TheoriePage() {
         })}
       </ol>
 
-      <p className="text-sm text-neutral-500">
-        Les leçons 5 à 11 (mineure, accords, harmonisation, progressions, pentatoniques,
-        modes, tensions) arrivent en phase 4c.
-      </p>
     </div>
   );
 }

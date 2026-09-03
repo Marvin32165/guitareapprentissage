@@ -245,12 +245,22 @@ sonne**. Le Mi grave à vide sonne un Mi2 et s'écrit Mi3, sous trois lignes
 supplémentaires. L'octave écrite se déduit de la lettre et non du MIDI divisé
 par douze (Si♯3 et Do4 sonnent pareil sans s'écrire pareil).
 
-### Phase 4c — Les 7 leçons restantes ⬜ (prochaine étape)
-Gamme mineure, accords, harmonisation, progressions, pentatoniques, modes,
-tensions. Plus les formes d'accords ouverts (CAGED).
-Le typage `conceptId` est prêt : les nouvelles notions s'ajoutent au registre
-avec leurs prérequis, et les tests refusent une leçon qui s'appuierait sur une
-notion enseignée plus tard.
+### Phase 4c — Les 7 leçons restantes ✅
+Onze leçons au total. Les sept ajoutées : gamme mineure, d'où viennent les
+accords, les accords d'une tonalité, les enchaînements qui reviennent, les cinq
+boîtes pentatoniques, les modes, les septièmes.
+
+Quinze notions ajoutées au registre avec leurs prérequis. Les garde-fous ont
+servi : le test « aucune leçon ne s'appuie sur une notion enseignée plus tard »
+et celui qui vérifie que chaque exercice de manche est résoluble ont attrapé une
+erreur réelle (voir plus bas).
+
+**Formes d'accords ouverts** : onze formes (E, Em, A, Am, D, Dm, C, G, E7, A7,
+D7) avec doigtés, rendues en diagramme vertical et **jouables au toucher**. Ce
+sont les seules données saisies à la main du projet, donc elles sont vérifiées
+contre le moteur théorique : les hauteurs produites par chaque doigté doivent
+former l'accord annoncé, la basse doit être la fondamentale, et un doigt doit
+être indiqué là où une case est pressée — nulle part ailleurs.
 
 ### Phase 5 — Oreille ⬜
 Reconnaissance d'intervalles, d'accords et de degrés. Plus un exercice de
