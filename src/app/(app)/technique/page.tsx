@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Metronome } from "@/components/technique/Metronome";
 import { LatencyCalibration } from "@/components/technique/LatencyCalibration";
 import { RhythmGate } from "@/components/technique/RhythmGate";
+import { BackingTrack } from "@/components/technique/BackingTrack";
 
 export const metadata: Metadata = { title: "Technique" };
 
@@ -18,6 +19,7 @@ export default function TechniquePage() {
       </header>
 
       <Metronome />
+      <BackingTrack />
       <RhythmGate />
       <LatencyCalibration />
     </div>

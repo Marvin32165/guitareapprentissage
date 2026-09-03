@@ -274,11 +274,22 @@ jouées correspondent bien à ce qu'on demande d'identifier.
 Chaque réponse alimente le journal `PracticeEvent`, base des statistiques de la
 phase 7.
 
-### Phase 6 — Technique ⬜ (prochaine étape)
-Métronome, exercices chronométrés, **détection par micro**, backing tracks
-échantillonnés (licence CC0 vérifiée et documentée par pack).
+### Phase 6 — Technique ✅
+Métronome sans dérive (planification sur l'horloge de l'AudioContext),
+calibration de latence par boucle acoustique, accompagnements engendrés.
 
-### Phase 7 — Progression ⬜
+La calibration est un **prérequis** : sans elle, aucune métrique de placement
+rythmique n'est affichée — pas avec un avertissement, pas du tout. Le détecteur
+d'attaques est vérifié contre des retards connus (20 à 300 ms, à moins de 3 ms
+près).
+
+Les accompagnements sont **engendrés à partir de la guitare échantillonnée**
+plutôt que téléchargés : aucune licence en jeu, transposition et tempo libres,
+et le son du reste de l'application. Six grilles dérivées du moteur d'harmonie,
+vérifiées dans huit tonalités. Ni batterie ni basse jouée : une grille qui
+tourne.
+
+### Phase 7 — Progression ⬜ (prochaine étape)
 - Répétition espacée **SM-2**, s'appuyant sur les `conceptId` déjà déclarés.
 - Routine du jour, statistiques, séries.
 - **Analyse de session par le micro, SANS stockage audio** : seules les

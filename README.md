@@ -502,9 +502,9 @@ comparables sur `/demo/audio`, en attente du verdict à l'oreille), puis
 **chantier B** — déclaration des `conceptId` dans le typage des leçons, en
 prévision de la répétition espacée — puis 4b, 4c, 5, 6, 7.
 5. ✅ **Module oreille** — intervalles, qualités d'accord, degrés, conversion latin ↔ anglo
-6. 🔄 **Module technique** — métronome et calibration de latence faits ; backing tracks en cours
-7. ⬜ Module progression (répétition espacée, routine, stats, répertoire,
-   analyse de session, export/import JSON)
+6. ✅ **Module technique** — métronome, calibration de latence, accompagnements engendrés
+7. ⬜ **Module progression** (répétition espacée, routine, stats, répertoire,
+   analyse de session, export/import JSON) — prochaine étape
 8. ⬜ Déploiement final
 
 Le détail des ajouts par phase est dans la **feuille de route** ci-dessous.
@@ -552,7 +552,7 @@ Les notions travaillées sont affichées en tête de chaque leçon.
 - *Reporté en phase 4* : bibliothèque de **formes d'accords ouverts** (CAGED)
   rendues sur le manche — utile surtout dans les leçons CAGED.
 
-### Phase 6 — Métronome, calibration : fait (backing tracks à suivre)
+### Phase 6 — Métronome, calibration, accompagnements : fait
 
 **Le métronome ne dérive pas.** `setInterval` seul se fait bousculer par le
 rendu, le ramasse-miettes ou un onglet en arrière-plan, et la dérive s'entend au
@@ -587,6 +587,25 @@ que du jeu.
 
 La page dit aussi, avant même de commencer, **ce qui ne sera jamais mesuré** :
 les notes d'un accord gratté, la dynamique, le son et le toucher.
+
+**Les accompagnements sont engendrés, pas téléchargés.** Le cahier des charges
+prévoyait des backing tracks échantillonnés sous licence CC0 vérifiée. Deux
+raisons d'avoir fait autrement : les hébergeurs d'échantillons sont
+inaccessibles depuis l'environnement de développement, donc leur licence est
+invérifiable ; et surtout un accompagnement construit à partir de la guitare
+**déjà échantillonnée** n'a aucune licence en jeu, se transpose dans les douze
+tonalités, suit n'importe quel tempo et sonne comme le reste de l'application.
+Un fichier figé ne fait rien de tout ça.
+
+Six grilles (I–V–vi–IV, I–vi–IV–V, ii–V–I, I–IV–V, et deux mineures) sont
+**dérivées du moteur d'harmonie**, pas saisies à la main, et vérifiées dans
+huit tonalités : chaque note appartient bien à la tonalité, la basse est la
+fondamentale, les voix montent sans croisement. La pentatonique qui tombe sur
+la grille est affichée sous le lecteur — c'est là qu'on peut jouer sans fausse
+note.
+
+À dire franchement, plutôt que de le laisser découvrir : ni batterie, ni basse
+jouée, ni production. Une grille qui tourne, pour travailler par-dessus.
 
 ### Phase 5 — Oreille : fait
 
