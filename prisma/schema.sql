@@ -61,7 +61,10 @@ CREATE TABLE "PracticeSession" (
     "startedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "endedAt" DATETIME,
     "durationSec" INTEGER NOT NULL DEFAULT 0,
-    "kind" TEXT
+    "kind" TEXT,
+    -- Mesures brutes et retour rédigé. Aucun audio n'est stocké.
+    "metrics" TEXT,
+    "feedback" TEXT
 );
 
 -- CreateTable

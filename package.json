@@ -17,6 +17,7 @@
     "audit:pitch": "vitest run --config vitest.audit.mts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.123.0",
     "@libsql/client": "^0.18.0",
     "@prisma/adapter-libsql": "^7.10.0",
     "@prisma/client": "^7.10.0",
