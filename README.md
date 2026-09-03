@@ -552,6 +552,35 @@ Les notions travaillées sont affichées en tête de chaque leçon.
 - *Reporté en phase 4* : bibliothèque de **formes d'accords ouverts** (CAGED)
   rendues sur le manche — utile surtout dans les leçons CAGED.
 
+### Analyse de placement rythmique — faite
+
+Derrière la porte de calibration, et nulle part ailleurs : le composant n'est
+pas seulement masqué, il n'est **pas rendu** tant que la latence est inconnue.
+
+Une mesure de décompte, quatre mesures de jeu. Les instants d'attaque sont
+extraits du signal, corrigés de la latence mesurée, et rattachés au temps le
+plus proche. **Le son est ensuite jeté** : rien n'est enregistré, rien n'est
+envoyé — conformément à la contrainte posée pour l'analyse de session.
+
+Deux chiffres, **et pas de note globale** :
+
+- le **placement** (devant ou derrière le temps), qui est un biais systématique ;
+- la **régularité** (dispersion autour de son propre placement).
+
+Ils ne se mélangent pas : on peut être parfaitement régulier et
+systématiquement en retard, et un chiffre unique effacerait justement la
+distinction qui sert à corriger.
+
+**L'incertitude de la calibration est propagée.** Si elle vaut ±10 ms, un écart
+mesuré de 6 ms n'est pas affiché comme un résultat : il est annoncé comme non
+interprétable. Et en dessous de huit attaques retenues, rien n'est conclu du
+tout.
+
+Une fenêtre de rattachement d'**un quart de temps**, et non d'un demi : à la
+moitié, toute attaque tombe dans la fenêtre d'un temps ou d'un autre, et une
+note jouée sur le contretemps serait comptée comme un temps très en retard —
+faussant à la fois le biais et la dispersion.
+
 ### Accordeur et détection de hauteur — faits
 
 Une note **seule tenue** est la seule chose qu'un micro de téléphone mesure sans
