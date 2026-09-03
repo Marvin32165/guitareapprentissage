@@ -262,11 +262,19 @@ contre le moteur théorique : les hauteurs produites par chaque doigté doivent
 former l'accord annoncé, la basse doit être la fondamentale, et un doigt doit
 être indiqué là où une case est pressée — nulle part ailleurs.
 
-### Phase 5 — Oreille ⬜
-Reconnaissance d'intervalles, d'accords et de degrés. Plus un exercice de
-conversion latin ↔ anglo.
+### Phase 5 — Oreille ✅
+Quatre exercices sur `/oreille` : intervalles, qualités d'accord, degrés,
+conversion latin ↔ anglo, sur trois niveaux.
 
-### Phase 6 — Technique ⬜
+Aucune réponse ne s'arrête à « juste / faux » : ce qui vient d'être entendu est
+montré sur le manche et peut être rejoué. La génération est séparée de
+l'interface et vérifiée sur 400 tirages par exercice — notamment que les notes
+jouées correspondent bien à ce qu'on demande d'identifier.
+
+Chaque réponse alimente le journal `PracticeEvent`, base des statistiques de la
+phase 7.
+
+### Phase 6 — Technique ⬜ (prochaine étape)
 Métronome, exercices chronométrés, **détection par micro**, backing tracks
 échantillonnés (licence CC0 vérifiée et documentée par pack).
 
