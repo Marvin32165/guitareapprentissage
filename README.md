@@ -198,6 +198,193 @@ Le conteneur de développement est éphémère (il redémarre seul et coupe tout
 serveur lancé), et il n'expose aucun ingress public. Il sert à construire et à
 tester, pas à héberger.
 
+## Son de guitare — sources, licences, décision
+
+Le son de l'application est en cours de refonte (chantier A). La synthèse
+actuelle (Tone.js `PluckSynth`, Karplus-Strong) s'écrase dans les aigus et n'a
+aucun corps de caisse dans les médiums ; elle est conservée comme **repli** —
+un clic ne doit jamais produire de silence — mais pas comme son principal.
+
+Six sources sont comparables à l'oreille sur **`/demo/audio`** : mêmes notes,
+même grille corde par corde, niveau réglable pour comparer honnêtement. Le
+détail des licences, des provenances et des retouches est dans
+[`CREDITS.md`](CREDITS.md).
+
+| # | Source | Étendue échantillonnée | Licence | Poids |
+| --- | --- | --- | --- | --- |
+| 1 | Synthèse actuelle | — | — | 0 |
+| 2 | University of Iowa | Ré2 → Ré5 | CC-BY 3.0 | 2,1 Mo (extrait de 16 notes) |
+| 3 | FluidR3 acier | tout le manche | CC-BY 3.0 | 412 ko (21 notes) |
+| 4 | FluidR3 nylon | tout le manche | CC-BY 3.0 | 380 ko (21 notes) |
+| 5 | Hybride Iowa + FluidR3 | Ré2 → Do8, raccord à Ré5 | CC-BY 3.0 | — |
+| 6 | **Martin HD28** | **Mi2 → Si5, un échantillon / 3 demi-tons** | **CC0 1.0** | **345 ko opus / 428 ko mp3** |
+
+**Recommandation, à confirmer à l'oreille : la 6.** Elle est arrivée après la
+construction de la page, en fouillant les dépôts SFZ ouverts sur GitHub. C'est
+une vraie Martin HD28, un seul instrument sur toute l'étendue utile — donc ni
+raccord entre deux captations, ni transposition longue — en **domaine public**,
+et six fois plus légère que le jeu Iowa pour une couverture bien plus large.
+Si elle convainc, la question du raccord de la 5 et celle du trou de tessiture
+d'Iowa disparaissent toutes les deux.
+
+### Ce qui a été retouché sur la source 6
+
+Les fichiers d'origine sonnent **bas** : de −5 cents dans le grave à −13,5 cents
+dans l'aigu. `scripts/build-samples.mjs` mesure la hauteur réelle de chaque
+fichier (autocorrélation normalisée avec interpolation parabolique du pic),
+rééchantillonne pour la poser sur la hauteur tempérée exacte, puis encode en
+Opus et en MP3. Vérification après encodage : **écart maximal 0,1 cent**.
+
+```bash
+npm i -D ffmpeg-static   # ou définir FFMPEG_PATH
+node scripts/build-samples.mjs <dossier-wav> public/audio/compare/martin --slug=martin
+```
+
+Le script écrit un `manifest.json` à côté des fichiers (écart mesuré,
+correction appliquée, durée, poids note par note). Les chiffres de cette
+documentation en sont tirés.
+
+### ⚠️ « Cordes filées / cordes nues » est une approximation, pas du sampling par corde
+
+À dire clairement, parce que c'est une limite réelle du projet et non un détail
+d'implémentation : **aucune des six sources n'est échantillonnée corde par
+corde.** Toutes donnent *une captation par hauteur*. Concrètement, Mi4 joué
+corde 1 case 0 et Mi4 joué corde 4 case 14 déclenchent le **même fichier**,
+alors que sur une vraie guitare ces deux notes n'ont ni le même timbre, ni la
+même attaque, ni la même durée.
+
+Ce qui est prévu à la place est un **traitement spectral appliqué après coup**,
+selon le groupe de cordes visé : léger creux dans le haut médium et extinction
+plus rapide des partiels pour les cordes filées (Mi grave, La, Ré) ; brillance
+et attaque conservées pour les cordes nues (Sol, Si, Mi aigu). C'est un
+**filtrage approximatif**. Il ne recrée pas le timbre réel d'une corde donnée :
+il évite seulement que deux occurrences de la même hauteur sonnent strictement
+à l'identique. Le test « même hauteur, quatre cordes différentes » de
+`/demo/audio` sert à mesurer cet écart à l'oreille.
+
+### Le moteur de jeu (`src/lib/audio/guitar.ts`)
+
+Au-dessus de la source choisie, quatre choses qu'un simple lecteur
+d'échantillons ne fait pas :
+
+- **Étouffement par corde.** Une corde ne porte qu'une note à la fois :
+  rejouer la corde de Sol coupe ce qu'elle tenait, les autres continuent de
+  sonner. C'est pour ça que chaque pincement pilote son propre
+  `AudioBufferSourceNode` au lieu de passer par un `Tone.Sampler`, qui
+  raisonne par hauteur et non par corde.
+- **Balayage.** Un accord s'attaque corde après corde, sur 15 à 30 ms, de la
+  grave vers l'aiguë (ou l'inverse en coup montant).
+- **Traitement filées / nues.** Voir l'encadré ci-dessus : c'est une
+  approximation par filtrage, pas du sampling par corde.
+- **Petite pièce.** Une convolution courte sur une réponse impulsionnelle
+  **calculée à l'exécution** (bruit filtré à décroissance exponentielle) : rien
+  à embarquer, donc aucune licence à vérifier. Ce n'est pas une vraie pièce,
+  juste de quoi enlever l'effet « note posée sur du silence ».
+
+Le chargement est **paresseux** : seul l'échantillon le plus proche de la note
+demandée est téléchargé, puis conservé dans le **Cache API**
+(`guitare-echantillons-v1`), donc conservé d'une session à l'autre. Un premier
+appui sur le manche déclenche une requête, pas quinze.
+
+Le repli sur la synthèse reste actif à chaque étage — un appui ne doit jamais
+produire de silence — mais il est désormais **signalé en console hors
+production**. Ce silence délibéré avait masqué un vrai bug : le moteur se
+branchait sur `Tone.getDestination().input`, qui est un nœud Tone et non un
+nœud Web Audio natif, et toutes les notes retombaient sur la synthèse sans
+que rien ne le dise.
+
+Le choix de source se fait sur `/demo/audio` et vaut pour toute l'application
+(manche interactif compris) ; il est mémorisé en `localStorage`, donc **par
+appareil** — ce qui est cohérent, puisqu'il se juge au casque ou au haut-parleur
+qu'on a sous la main.
+
+### Freesound : ce qui a été trouvé, et ce que je ne peux pas faire d'ici
+
+L'environnement de développement **ne peut pas atteindre Freesound** : la
+politique réseau sortante refuse la connexion (`connect_rejected`, 403 au
+CONNECT). Même chose pour `philharmonia.co.uk`, `theremin.music.uiowa.edu` et
+`archive.org`. Je n'ai donc pu ni ouvrir, ni écouter, ni télécharger quoi que
+ce soit sur ces sites ; la recherche s'est faite **par moteur de recherche**.
+
+Elle a quand même donné un résultat net : **des jeux de guitare échantillonnés
+corde par corde existent bien sur Freesound**, chez
+[`Carlos_Vaquero`](https://freesound.org/people/Carlos_Vaquero/) — packs
+[9537](https://freesound.org/people/Carlos_Vaquero/packs/9537/) et
+[9538](https://freesound.org/people/Carlos_Vaquero/packs/9538/), intitulés
+« Classical Guitar: Single notes Non Vibrato **String 1** », 14 à 16 sons
+chacun, 440 Hz, mezzoforte. Deux réserves invérifiables d'ici : la licence
+paraît être **CC BY-NC** (donc pas CC0, mais compatible avec un usage
+personnel), et c'est une guitare **classique nylon**, pas acier.
+
+**Protocole si tu veux creuser** (10 minutes, il faut un compte gratuit) :
+
+1. Ouvre <https://freesound.org/people/Carlos_Vaquero/packs/> et cherche les
+   packs « Classical Guitar ». Note **combien de packs** couvrent les 6 cordes
+   et l'étendue de chacun.
+2. Sur la page d'un son du pack, relève la **licence exacte** affichée
+   (« Creative Commons 0 », « Attribution », « Attribution NonCommercial »).
+   C'est le seul point qui peut disqualifier le jeu.
+3. Pour une recherche plus large : <https://freesound.org/search/>, requête
+   `guitar note`, puis dans le filtre de gauche **License → Creative Commons 0**,
+   et l'onglet **Packs** plutôt que Sounds — un jeu complet est toujours publié
+   comme pack.
+4. Si tu trouves mieux, envoie-moi simplement **l'URL du pack et la licence
+   affichée**. L'ajout d'une source ne touche ni le moteur ni l'interface :
+   c'est une entrée de plus dans `src/lib/audio/sources.ts`.
+
+### Enregistrer toi-même les notes manquantes — protocole
+
+**À ne faire que si la source 6 ne te convainc pas.** Elle couvre déjà
+Mi2 → Si5 ; le trou de tessiture d'Iowa (Ré5 → Sol5) n'existe plus si tu la
+retiens. Ce protocole ne sert que dans le cas contraire.
+
+*Ce qu'il faut jouer* — 5 notes, toutes sur la **corde de Mi aigu** :
+
+| Note | Corde | Case | Fréquence attendue |
+| --- | --- | --- | --- |
+| Mi♭5 | Mi aigu (1re) | 11 | 622,25 Hz |
+| Mi5 | Mi aigu (1re) | 12 | 659,26 Hz |
+| Fa5 | Mi aigu (1re) | 13 | 698,46 Hz |
+| Fa♯5 | Mi aigu (1re) | 14 | 739,99 Hz |
+| Sol5 | Mi aigu (1re) | 15 | 783,99 Hz |
+
+*Comment* :
+
+- **Accorde au chromatique avant**, à 440 Hz, et revérifie la corde de Mi aigu
+  entre chaque prise. C'est le seul point non rattrapable : je peux corriger un
+  décalage constant, pas une corde qui dérive.
+- Une note **seule**, pincée franchement mais sans forcer (nuance mezzoforte),
+  **laissée sonner jusqu'au bout** — n'étouffe pas, ne bouge pas la main.
+  Compte 4 secondes après l'attaque avant de t'arrêter.
+- **3 prises par note**, je garde la meilleure. Soit 15 attaques en tout.
+- **1 seconde de silence** avant l'attaque et après l'extinction.
+
+*Où et avec quoi* :
+
+- Pièce calme et plutôt mate (pas de salle de bain carrelée, pas de grande
+  pièce vide). Un tapis, un canapé, des rideaux : tout ça aide.
+- Téléphone **posé** sur un support stable (table, coussin) à **30–40 cm**,
+  pointé vers la **12e case**, pas vers la rosace — droit dans la rosace, c'est
+  boomy et inexploitable.
+- **Mode avion**, pour qu'aucune notification ne tombe au milieu d'une prise.
+
+*Sous quel format* :
+
+- Le format natif de ton enregistreur convient (`.m4a` iOS Dictaphone, `.wav`
+  ou `.m4a` Android). **Ne réencode rien, ne coupe rien, ne normalise rien** :
+  je m'occupe du découpage, du calage de hauteur et du niveau.
+- Le plus simple : **un seul fichier** avec les 15 attaques dans l'ordre du
+  tableau, en annonçant la note à voix haute avant chaque série (« mi bémol »,
+  puis 3 prises, puis « mi »…). Je découpe.
+- Dépose-le dans `public/audio/perso/` et commit, ou envoie-le-moi directement.
+
+*Ce que tu dois savoir avant de t'y mettre* : un micro de téléphone dans une
+pièce ordinaire ne sonnera pas comme une captation de studio. Coller ces 5
+notes au bout d'un jeu enregistré ailleurs risque de produire un raccord **plus
+audible** que celui que tu voulais éviter. C'est précisément pour ça que la
+source 6, qui supprime le problème au lieu de le rapiécer, est la bonne
+réponse si elle te plaît à l'écoute.
+
 ## Sécurité — avertissement d'audit
 
 `npm audit` peut signaler quelques vulnérabilités : elles proviennent
@@ -223,6 +410,12 @@ pas partie du bundle de production déployé sur Vercel. Ne pas lancer
      intervalles, gamme majeure, CAGED) **→ déploiement Vercel + Turso**
    - 4b ⬜ Notation sur portée (VexFlow) + parcours de lecture
    - 4c ⬜ Les 7 leçons restantes + formes d'accords ouverts (CAGED)
+
+**Ordre de travail en cours** (priorité : résultat abouti plutôt que mise en
+service rapide) : **chantier A — refonte du son** (🔄 en cours : six sources
+comparables sur `/demo/audio`, en attente du verdict à l'oreille), puis
+**chantier B** — déclaration des `conceptId` dans le typage des leçons, en
+prévision de la répétition espacée — puis 4b, 4c, 5, 6, 7.
 5. ⬜ Module oreille (+ exercice de conversion latin ↔ anglo)
 6. ⬜ Module métronome & technique (+ détection micro, backing tracks échantillonnés)
 7. ⬜ Module progression (répétition espacée, routine, stats, répertoire,
@@ -235,6 +428,26 @@ Le détail des ajouts par phase est dans la **feuille de route** ci-dessous.
 
 Ces éléments sont **planifiés** et affectés à une phase précise. On ne code que
 la phase en cours ; tout le reste est documenté ici.
+
+### Fait — notions déclarées (préalable à la répétition espacée)
+
+Chaque exercice déclare la **notion** qu'il travaille (`conceptId`), et chaque
+leçon la liste de celles qu'elle introduit. Le registre est dans
+`src/content/concepts.ts` : étiquette, résumé, et **prérequis**.
+
+Une notion n'est pas une leçon. Une leçon en introduit plusieurs, et une même
+notion est retravaillée plus tard par d'autres exercices. C'est la notion, pas
+l'exercice, que la répétition espacée (phase 7) planifiera — sans quoi réussir
+un QCM ne dirait rien de ce qu'on sait vraiment.
+
+Le champ est **obligatoire dans le typage** : le rendre facultatif reviendrait
+à le voir manquer sur la moitié des exercices. Quatre vérifications
+automatiques l'accompagnent, dont celle qui compte : **aucune leçon ne peut
+s'appuyer sur une notion enseignée plus tard**. Sur un parcours qu'on suit
+seul et dans l'ordre, c'est l'erreur la plus coûteuse, et la plus facile à
+commettre en ajoutant une leçon au milieu.
+
+Les notions travaillées sont affichées en tête de chaque leçon.
 
 ### Fait — complément moteur (phase 2 bis)
 - Harmonisation **mineure** (naturelle, harmonique, mélodique) avec chiffrage

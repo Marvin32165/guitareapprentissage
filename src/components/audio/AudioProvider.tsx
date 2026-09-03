@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { startAudio } from "@/lib/audio/engine";
+import { applyStoredSource } from "@/lib/audio/preference";
 
 type AudioContextValue = {
   ready: boolean;
@@ -21,6 +22,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
 
   const unlock = useCallback(async () => {
+    // La source choisie sur /demo/audio n'est lue qu'ici : avant le premier
+    // geste utilisateur, aucun son n'est produit de toute façon.
+    applyStoredSource();
     await startAudio();
     setReady(true);
   }, []);

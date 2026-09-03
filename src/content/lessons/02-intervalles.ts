@@ -6,6 +6,7 @@ export const lesson: Lesson = {
   title: "Les intervalles",
   goal: "Mesurer la distance entre deux notes, et reconnaître à l'œil les formes d'octave, de quinte et de tierce sur le manche.",
   minutes: 10,
+  concepts: ["intervalle-demi-tons", "intervalle-nom", "intervalle-manche"],
   blocks: [
     {
       kind: "prose",
@@ -55,6 +56,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l2-e1",
+        conceptId: "intervalle-demi-tons",
         kind: "mcq",
         prompt: "Combien de demi-tons contient une quinte juste ?",
         options: ["5", "6", "7", "8"],
@@ -66,6 +68,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l2-e2",
+        conceptId: "intervalle-nom",
         kind: "mcq",
         prompt: "Do → Mi, quel intervalle ?",
         options: ["Tierce mineure", "Tierce majeure", "Quarte juste", "Seconde majeure"],
@@ -77,6 +80,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l2-e3",
+        conceptId: "intervalle-manche",
         kind: "fretFind",
         prompt: "Sur ce Do majeur, clique une quinte (un Sol).",
         spec: { root: "C", kind: "chordMaj", fromFret: 0, toFret: 12, labelMode: "degree" },
@@ -88,6 +92,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l2-e4",
+        conceptId: "intervalle-manche",
         kind: "fretFind",
         prompt: "Maintenant clique une tierce (un Mi).",
         spec: { root: "C", kind: "chordMaj", fromFret: 0, toFret: 12, labelMode: "degree" },

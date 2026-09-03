@@ -6,6 +6,7 @@ export const lesson: Lesson = {
   title: "Les notes sur le manche",
   goal: "Nommer n'importe quelle note sur les cordes de Mi grave et de La, et savoir pourquoi Mi–Fa et Si–Do sont collés.",
   minutes: 8,
+  concepts: ["notes-alterees", "notes-manche", "octave"],
   blocks: [
     {
       kind: "prose",
@@ -58,6 +59,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l1-e1",
+        conceptId: "notes-alterees",
         kind: "mcq",
         prompt: "Entre quelles paires de notes n'y a-t-il PAS de note altérée ?",
         options: ["Do–Ré et Sol–La", "Mi–Fa et Si–Do", "Fa–Sol et La–Si", "Ré–Mi et Do–Ré"],
@@ -69,6 +71,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l1-e2",
+        conceptId: "notes-manche",
         kind: "fretFind",
         prompt: "Sur la corde de Mi grave, clique le La (A).",
         spec: { root: "C", kind: "major", onlyStringIndexes: [0], fromFret: 0, toFret: 12, labelMode: "note" },
@@ -93,6 +96,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l1-e3",
+        conceptId: "notes-manche",
         kind: "fretFind",
         prompt: "Sur la corde de La, clique le Do (C).",
         spec: { root: "C", kind: "major", onlyStringIndexes: [1], fromFret: 0, toFret: 12, labelMode: "note" },
@@ -105,6 +109,7 @@ export const lesson: Lesson = {
       kind: "exercise",
       exercise: {
         id: "l1-e4",
+        conceptId: "octave",
         kind: "mcq",
         prompt: "Combien de frettes séparent une note de son octave ?",
         options: ["7", "10", "12", "5"],
