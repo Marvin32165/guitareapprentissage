@@ -165,7 +165,6 @@ clavier :
   pourquoi chaque pincement pilote son propre `AudioBufferSourceNode` plutôt que
   de passer par un `Tone.Sampler`, qui raisonne par hauteur et non par corde.
 - **Balayage** de 15 à 30 ms, grave→aiguë ou l'inverse.
-- **Traitement filées / nues** (voir limites plus bas).
 - **Petite pièce** par convolution, sur une réponse impulsionnelle **calculée à
   l'exécution** : rien à embarquer, donc aucune licence à vérifier.
 - **Chargement paresseux + Cache API** : un appui déclenche une requête, pas
@@ -201,10 +200,10 @@ vérifié à trois niveaux :
 - **Aucune source n'est échantillonnée corde par corde.** Toutes donnent *une
   captation par hauteur*. Mi4 corde 1 case 0 et Mi4 corde 4 case 14 déclenchent
   le **même fichier**, alors que sur une vraie guitare ces deux notes n'ont ni
-  le même timbre, ni la même attaque, ni la même durée. Le traitement
-  « filées / nues » est un **filtrage approximatif** appliqué après coup, pas du
-  sampling par corde — documenté comme tel, à la demande explicite de
-  l'utilisateur.
+  le même timbre, ni la même attaque, ni la même durée. Un filtrage
+  « filées / nues » avait été écrit pour atténuer ça ; comparé à l'aveugle sur
+  ce cas précis, **il ne s'est pas entendu et a été retiré**. La limite est
+  assumée telle quelle.
 - **Aucune couche de vélocité.** Aucune source libre trouvée n'en propose pour
   une guitare acoustique ; la Martin est mono-couche. À ne pas simuler en
   faisant semblant.
@@ -228,7 +227,7 @@ Ordre décidé : **A → 4b → 4c → 5 → 6 → 7.**
 - Bruit de glissé (*slide noise*) — optionnel.
 - Encodage définitif du jeu retenu (FluidR3 acier). Les sources écartées
   restent dans le dépôt (décision 1).
-- Retrait du traitement filées/nues s'il ne s'entend pas (décision 2).
+- ~~Traitement filées/nues~~ : retiré après test à l'aveugle (décision 2).
 - Couches de vélocité : **bloqué faute de source libre**, à documenter plutôt
   qu'à simuler.
 
@@ -305,12 +304,12 @@ SW sans précache et excluant `/audio/`, catalogue chargé dynamiquement au
 premier son, échantillons chargés note par note. Contrôlé au navigateur
 (0 entrée audio dans le cache du SW) et verrouillé par des tests.
 
-**2. Traitement filées/nues — à juger, pas à supposer.** Un test à l'aveugle a
-été construit sur le cas critique : le même Mi4 joué corde 1 case 0 puis corde 4
-case 14, traitement actif contre traitement coupé, niveaux égalisés, côté tiré
-au sort. **En attente du verdict de l'utilisateur.** S'il n'entend pas de
-différence, le traitement est retiré — une approximation qui n'apporte rien est
-de la dette.
+**2. Traitement filées/nues — jugé à l'aveugle, puis retiré.** Test construit
+sur le cas critique : le même Mi4 joué corde 1 case 0 puis corde 4 case 14,
+traitement actif contre traitement coupé, niveaux égalisés, côté tiré au sort.
+**Verdict de l'utilisateur : aucune différence audible.** Le traitement, son
+interrupteur et sa page de test ont été supprimés. La limite (pas de sampling
+par corde) est assumée telle quelle.
 
 **3. VexFlow (phase 4b) — la portée n'apparaît jamais seule.** Composant unique
 portée + manche + son, où la même note s'allume simultanément aux deux endroits.

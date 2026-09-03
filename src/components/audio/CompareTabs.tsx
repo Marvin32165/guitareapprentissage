@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { GuidedCompare } from "./GuidedCompare";
 import { AudioCompare } from "./AudioCompare";
-import { TreatmentTest } from "./TreatmentTest";
 
 // Deux façons de choisir, parce qu'elles ne demandent pas la même chose :
 // le mode guidé ne suppose aucune habitude d'écoute comparative, l'exploration
@@ -12,7 +11,6 @@ import { TreatmentTest } from "./TreatmentTest";
 const TABS = [
   { id: "guide", label: "Comparaison guidée", hint: "5 questions, noms cachés" },
   { id: "libre", label: "Exploration libre", hint: "toutes les sources, note par note" },
-  { id: "traitement", label: "Test du traitement", hint: "filées / nues, à l'aveugle" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -22,7 +20,7 @@ export function CompareTabs() {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="tablist">
+      <div className="grid grid-cols-2 gap-2" role="tablist">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -50,9 +48,7 @@ export function CompareTabs() {
         ))}
       </div>
 
-      {tab === "guide" && <GuidedCompare />}
-      {tab === "libre" && <AudioCompare />}
-      {tab === "traitement" && <TreatmentTest />}
+      {tab === "guide" ? <GuidedCompare /> : <AudioCompare />}
     </div>
   );
 }
