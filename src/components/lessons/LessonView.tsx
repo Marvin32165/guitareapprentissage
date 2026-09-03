@@ -60,9 +60,14 @@ export function LessonView({
     });
   }
 
-  async function complete() {
-    setStatus("completed");
-    await log("/api/lessons/progress", { lessonId: lesson.slug, status: "completed" });
+  const isDone = status === "completed";
+
+  // Bascule dans les deux sens : on doit pouvoir revenir en arrière si on a
+  // marqué une leçon terminée par erreur, ou si on veut la retravailler.
+  async function toggleComplete() {
+    const next = isDone ? "in_progress" : "completed";
+    setStatus(next);
+    await log("/api/lessons/progress", { lessonId: lesson.slug, status: next });
   }
 
   return (
@@ -90,14 +95,25 @@ export function LessonView({
           Exercices : {done}/{total} répondus
           {done > 0 && <> · {correct} juste{correct > 1 ? "s" : ""}</>}
         </p>
-        <button
-          type="button"
-          onClick={complete}
-          disabled={status === "completed"}
-          className="min-h-12 w-full rounded-lg bg-emerald-600 px-4 font-medium text-white active:bg-emerald-700 disabled:opacity-50 sm:w-auto"
-        >
-          {status === "completed" ? "Leçon terminée ✓" : "Marquer comme terminée"}
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {isDone && (
+            <span className="rounded-full bg-emerald-600/20 px-3 py-1 text-sm font-medium text-emerald-300">
+              ✓ Leçon terminée
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={toggleComplete}
+            className={
+              "min-h-12 rounded-lg px-4 font-medium transition-colors " +
+              (isDone
+                ? "border border-neutral-700 text-neutral-300 hover:bg-neutral-800"
+                : "w-full bg-emerald-600 text-white active:bg-emerald-700 sm:w-auto")
+            }
+          >
+            {isDone ? "Marquer comme non terminée" : "Marquer comme terminée"}
+          </button>
+        </div>
         <nav className="flex justify-between gap-3 text-sm">
           {prevSlug ? (
             <Link href={`/theorie/${prevSlug}`} className="min-h-11 text-neutral-400 hover:text-neutral-100">
