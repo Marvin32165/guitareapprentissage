@@ -1,6 +1,7 @@
 # Guitare — Apprentissage : état du projet
 
-Document autonome, à jour au 3 septembre 2026. Écrit pour être lu **sans accès
+Document autonome, à jour au 3 septembre 2026. **Les sept phases prévues
+sont terminées et déployées** ; ce qui reste est listé en section 5. Écrit pour être lu **sans accès
 au dépôt** : tout ce qui est nécessaire pour discuter du projet est ici.
 
 ---
@@ -73,7 +74,7 @@ ambre prévient honnêtement quand elle est absente.
 
 ---
 
-## 3. Ce qui est fait
+## 3. Ce qui est fait — les sept phases sont terminées
 
 ### Phase 1 — Fondations ✅
 Next.js, Tailwind, Prisma, authentification, coquille responsive, PWA
@@ -195,42 +196,6 @@ vérifié à trois niveaux :
 
 ---
 
-## 4. Limites connues, à dire franchement
-
-- **Aucune source n'est échantillonnée corde par corde.** Toutes donnent *une
-  captation par hauteur*. Mi4 corde 1 case 0 et Mi4 corde 4 case 14 déclenchent
-  le **même fichier**, alors que sur une vraie guitare ces deux notes n'ont ni
-  le même timbre, ni la même attaque, ni la même durée. Un filtrage
-  « filées / nues » avait été écrit pour atténuer ça ; comparé à l'aveugle sur
-  ce cas précis, **il ne s'est pas entendu et a été retiré**. La limite est
-  assumée telle quelle.
-- **Aucune couche de vélocité.** Aucune source libre trouvée n'en propose pour
-  une guitare acoustique ; la Martin est mono-couche. À ne pas simuler en
-  faisant semblant.
-- **Freesound est inaccessible** depuis l'environnement de développement (la
-  politique réseau sortante refuse la connexion). Recherche menée indirectement :
-  des jeux **échantillonnés corde par corde existent bien** chez
-  `Carlos_Vaquero` (« Classical Guitar: Single notes … String 1 »), mais la
-  licence paraît **CC BY-NC** et c'est une guitare **classique nylon**, pas
-  acier. Non vérifiable d'ici.
-- **Le déploiement n'est pas vérifiable** depuis l'environnement de dev
-  (`vercel.app` est bloqué par la même politique). Les vérifications se font en
-  local, au navigateur, avant fusion.
-
----
-
-## 5. Ce qu'il reste à faire
-
-Ordre décidé : **A → 4b → 4c → 5 → 6 → 7.**
-
-### Fin du chantier A (petit reliquat)
-- Bruit de glissé (*slide noise*) — optionnel.
-- Encodage définitif du jeu retenu (FluidR3 acier). Les sources écartées
-  restent dans le dépôt (décision 1).
-- ~~Traitement filées/nues~~ : retiré après test à l'aveugle (décision 2).
-- Couches de vélocité : **bloqué faute de source libre**, à documenter plutôt
-  qu'à simuler.
-
 ### Phase 4b — Notation sur portée ✅
 VexFlow 5, page `/demo/portee` : onglet **Explorer** (toucher une case allume la
 note sur la portée et la joue) et onglet **S'entraîner** (parcours de lecture).
@@ -324,7 +289,31 @@ exécuté contre le vrai service.
 
 ---
 
-## 5 bis. Ce qui reste
+## 4. Limites connues, à dire franchement
+
+- **Aucune source n'est échantillonnée corde par corde.** Toutes donnent *une
+  captation par hauteur*. Mi4 corde 1 case 0 et Mi4 corde 4 case 14 déclenchent
+  le **même fichier**, alors que sur une vraie guitare ces deux notes n'ont ni
+  le même timbre, ni la même attaque, ni la même durée. Un filtrage
+  « filées / nues » avait été écrit pour atténuer ça ; comparé à l'aveugle sur
+  ce cas précis, **il ne s'est pas entendu et a été retiré**. La limite est
+  assumée telle quelle.
+- **Aucune couche de vélocité.** Aucune source libre trouvée n'en propose pour
+  une guitare acoustique ; la Martin est mono-couche. À ne pas simuler en
+  faisant semblant.
+- **Freesound est inaccessible** depuis l'environnement de développement (la
+  politique réseau sortante refuse la connexion). Recherche menée indirectement :
+  des jeux **échantillonnés corde par corde existent bien** chez
+  `Carlos_Vaquero` (« Classical Guitar: Single notes … String 1 »), mais la
+  licence paraît **CC BY-NC** et c'est une guitare **classique nylon**, pas
+  acier. Non vérifiable d'ici.
+- **Le déploiement n'est pas vérifiable** depuis l'environnement de dev
+  (`vercel.app` est bloqué par la même politique). Les vérifications se font en
+  local, au navigateur, avant fusion.
+
+---
+
+## 5. Ce qu'il reste
 
 - **Hooktheory**, si l'accès réseau le permet un jour.
 - **Couches de vélocité** pour le son : aucune source libre n'en propose pour
