@@ -146,12 +146,12 @@ conservés.
    turso db show guitare --url        # -> TURSO_DATABASE_URL (libsql://…)
    turso db tokens create guitare     # -> TURSO_AUTH_TOKEN
    ```
-2. Appliquer le schéma (les migrations, dans l'ordre) :
+2. Appliquer le schéma. Le fichier **`prisma/schema.sql`** réunit toutes les
+   migrations : une seule commande (ou un seul copier-coller dans la console
+   SQL du tableau de bord Turso).
    ```bash
-   for f in prisma/migrations/*/migration.sql; do
-     echo "-- $f"; turso db shell guitare < "$f"
-   done
-   turso db shell guitare ".tables"   # vérification
+   turso db shell guitare < prisma/schema.sql
+   turso db shell guitare ".tables"   # vérification : 9 tables
    ```
 3. Ajouter sur Vercel `TURSO_DATABASE_URL` et `TURSO_AUTH_TOKEN`, puis
    **redéployer**. (`DATABASE_URL` n'est pas utilisé en production : dès que
@@ -161,6 +161,33 @@ conservés.
 
 Va dans **Théorie**, termine une leçon, reviens au parcours et recharge : le
 badge « Terminée » doit rester, et le bandeau d'avertissement doit avoir disparu.
+
+### Mise en place depuis un PC partagé ou emprunté
+
+Rien d'important ne reste sur la machine : le code est sur GitHub, l'hébergement
+sur Vercel, la base sur Turso. Le PC ne sert que de navigateur.
+
+- **Option A : aucune trace.** Tout se fait sur vercel.com. Rien à installer,
+  pas besoin de cloner le dépôt. Fais-le dans une **fenêtre de navigation
+  privée** : en la fermant, sessions et cookies disparaissent.
+- **Option B sans rien installer :** le tableau de bord Turso permet de créer la
+  base, de récupérer l'URL et un jeton, et d'exécuter du SQL. Colle alors le
+  contenu de **`prisma/schema.sql`** (toutes les migrations réunies en un seul
+  fichier, lisible directement sur GitHub) — une seule opération.
+- **Option B avec la CLI :** si tu installes `turso`, pense ensuite à
+  `turso auth logout`, puis supprime son dossier de configuration
+  (`~/.turso` ou `~/.config/turso`) et le binaire.
+
+Avant de rendre la machine :
+
+1. Se déconnecter de GitHub, Vercel et Turso (ou fermer la fenêtre privée).
+2. Ne pas enregistrer les mots de passe dans le navigateur.
+3. Si tu as cloné le dépôt, supprimer le dossier — il peut contenir un `.env`.
+4. Ne laisser aucun jeton dans un fichier texte ou le presse-papiers.
+
+Tes secrets (`APP_PASSWORD`, `SESSION_SECRET`, jeton Turso) vivent dans les
+variables d'environnement Vercel, c'est-à-dire au bon endroit : sur ton compte,
+pas sur la machine.
 
 ### Pourquoi pas d'hébergement dans l'environnement Claude
 
