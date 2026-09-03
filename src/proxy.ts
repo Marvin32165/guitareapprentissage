@@ -35,8 +35,13 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Tout sauf : assets Next, icônes, échantillons audio, manifest, service
-    // worker, favicon, et les endpoints d'authentification (login/logout).
-    "/((?!_next/static|_next/image|favicon.ico|icons/|audio/|manifest.webmanifest|sw.js|api/auth).*)",
+    // Tout sauf : assets Next, icônes, échantillons audio, worklets audio,
+    // manifest, service worker, favicon, et l'authentification.
+    //
+    // Les worklets doivent être exclus explicitement : `audioWorklet.addModule`
+    // suit la redirection vers /login et reçoit du HTML, ce qui fait échouer le
+    // chargement — micro, accordeur et calibration tombent en panne sans que
+    // rien ne l'explique.
+    "/((?!_next/static|_next/image|favicon.ico|icons/|audio/|worklets/|manifest.webmanifest|sw.js|api/auth).*)",
   ],
 };

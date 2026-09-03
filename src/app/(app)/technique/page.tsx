@@ -3,6 +3,7 @@ import { Metronome } from "@/components/technique/Metronome";
 import { LatencyCalibration } from "@/components/technique/LatencyCalibration";
 import { RhythmGate } from "@/components/technique/RhythmGate";
 import { BackingTrack } from "@/components/technique/BackingTrack";
+import { Tuner } from "@/components/technique/Tuner";
 
 export const metadata: Metadata = { title: "Technique" };
 
@@ -18,6 +19,7 @@ export default function TechniquePage() {
         </p>
       </header>
 
+      <Tuner />
       <Metronome />
       <BackingTrack />
       <RhythmGate />
