@@ -501,8 +501,8 @@ service rapide) : **chantier A — refonte du son** (🔄 en cours : six sources
 comparables sur `/demo/audio`, en attente du verdict à l'oreille), puis
 **chantier B** — déclaration des `conceptId` dans le typage des leçons, en
 prévision de la répétition espacée — puis 4b, 4c, 5, 6, 7.
-5. ⬜ **Module oreille** (+ exercice de conversion latin ↔ anglo) — prochaine étape
-6. ⬜ Module métronome & technique (+ détection micro, backing tracks échantillonnés)
+5. ✅ **Module oreille** — intervalles, qualités d'accord, degrés, conversion latin ↔ anglo
+6. ⬜ Module métronome & technique (+ détection micro, backing tracks échantillonnés) — prochaine étape
 7. ⬜ Module progression (répétition espacée, routine, stats, répertoire,
    analyse de session, export/import JSON)
 8. ⬜ Déploiement final
@@ -551,6 +551,38 @@ Les notions travaillées sont affichées en tête de chaque leçon.
   principal ; le relevé de note affiche les deux (« Mi (E) »).
 - *Reporté en phase 4* : bibliothèque de **formes d'accords ouverts** (CAGED)
   rendues sur le manche — utile surtout dans les leçons CAGED.
+
+### Phase 5 — Oreille : fait
+
+Quatre exercices sur `/oreille` : intervalles, qualités d'accord, degrés dans
+une tonalité, et conversion latin ↔ anglo. Trois niveaux qui ouvrent
+progressivement le répertoire.
+
+**Aucune réponse ne s'arrête à « juste / faux »** : ce qui vient d'être entendu
+est montré sur le manche et peut être rejoué. Reconnaître une tierce mineure
+sans savoir où elle tombe sous les doigts n'apprend rien à quelqu'un qui a
+l'instrument en main.
+
+La génération des questions est séparée de l'interface et vérifiée sur
+400 tirages par exercice : la bonne réponse figure toujours parmi les
+propositions, les notes jouées correspondent réellement à ce qu'on demande
+d'identifier (un intervalle annoncé « quinte » DOIT sonner sept demi-tons), et
+la consigne ne contient jamais la réponse.
+
+Deux détails qui auraient mordu :
+
+- **L'étouffement par corde** aurait coupé les accords si toutes leurs notes
+  partaient sur la même corde. Chaque note d'un groupe reçoit donc une corde
+  distincte, et deux groupes successifs ne réutilisent pas la même — sans quoi
+  la deuxième note d'un intervalle couperait la première.
+- **La première question est déterministe.** Tirée au hasard, elle différait
+  entre le rendu serveur et le rendu client, et React signalait une erreur
+  d'hydratation (#418). Elle est désormais issue d'une graine stable dérivée de
+  l'exercice et du niveau ; les suivantes sont aléatoires.
+
+Chaque réponse écrit une ligne dans le journal `PracticeEvent`
+(`ear_interval`, `ear_chord_quality`, `ear_degree`, `ear_naming`), qui servira
+de base aux statistiques et à la pondération de la phase 7.
 
 ### Phase 4c — Leçons 5 à 11 et accords ouverts : fait
 
