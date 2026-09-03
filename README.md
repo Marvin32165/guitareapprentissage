@@ -287,6 +287,23 @@ il évite seulement que deux occurrences de la même hauteur sonnent strictement
 à l'identique. Le test « même hauteur, quatre cordes différentes » de
 `/demo/audio` sert à mesurer cet écart à l'oreille.
 
+### Ce qui descend sur le téléphone
+
+Les six jeux d'échantillons restent dans le dépôt pour pouvoir refaire la
+comparaison, mais **un seul est joué** et les cinq autres ne doivent jamais
+partir sur l'appareil. Trois garde-fous, vérifiés par des tests
+(`src/lib/audio/precache.test.ts`) et au navigateur :
+
+- Le **service worker ne précharge rien** et exclut explicitement `/audio/`.
+  Son cache contient 0 entrée audio après visite des pages.
+- Le **catalogue des sources est chargé dynamiquement** par le moteur, au
+  premier son seulement : `/theorie` et `/demo/fretboard` ne le téléchargent
+  pas. Les identifiants de source, eux, tiennent dans un module minuscule sans
+  aucun chemin de fichier.
+- Le **chargement des échantillons est note par note**, dans un cache dédié
+  (`guitare-echantillons-v1`) : un appui sur le manche demande un fichier, pas
+  quinze.
+
 ### Le moteur de jeu (`src/lib/audio/guitar.ts`)
 
 Au-dessus de la source choisie, quatre choses qu'un simple lecteur
@@ -537,6 +554,46 @@ Les notions travaillées sont affichées en tête de chaque leçon.
   principal ; le relevé de note affiche les deux (« Mi (E) »).
 - *Reporté en phase 4* : bibliothèque de **formes d'accords ouverts** (CAGED)
   rendues sur le manche — utile surtout dans les leçons CAGED.
+
+### Phase 4b — Notation sur portée : contraintes imposées
+
+Décidé par l'utilisateur, non négociable sans le prévenir :
+
+- **La portée n'apparaît jamais seule.** Un composant unique porte la portée,
+  le manche et le son ensemble ; **la même note s'allume simultanément aux deux
+  endroits**.
+- Le parcours de lecture demande **« trouve cette note sur ta guitare et
+  joue-la »**, jamais « nomme cette note ». Lire une portée sert à jouer, pas à
+  réciter.
+- **Si une vue portée seule devient nécessaire quelque part, prévenir avant de
+  l'implémenter.** C'est le point où la règle centrale du projet (rien
+  d'abstrait) est la plus facile à trahir sans s'en apercevoir.
+
+### Phase 6/7 — Micro : ce qui est mesurable, et ce qui ne l'est pas
+
+Cadre imposé par l'utilisateur. **Pas de score global. Métriques brutes, avec
+leur incertitude.**
+
+**Mesurable de façon fiable :**
+- fréquence fondamentale d'une note seule tenue (monophonique) ;
+- instants d'attaque, régularité du tempo ;
+- conformité des notes jouées à une gamme attendue.
+
+**Non fiable — à ne pas prétendre mesurer :**
+- **transcription polyphonique** : détecter les notes d'un accord gratté dépasse
+  ce qu'on peut faire honnêtement avec YIN sur un micro de téléphone ;
+- **dynamique et nuances** : le contrôle automatique de gain des micros de
+  téléphone écrase les écarts de volume ;
+- **son, toucher, musicalité** : aucune métrique ne les capture.
+
+**Obstacle à traiter en premier — calibration de latence.** Mesurer le placement
+rythmique contre le métronome exige de connaître la latence aller-retour du
+système, qui va de ~20 ms en filaire à ~300 ms en Bluetooth. Sans calibration,
+toute métrique de timing est **du bruit présenté comme une mesure**.
+
+Donc : une procédure de calibration est un **prérequis** de tout exercice
+rythmique, et les métriques de timing sont **refusées** tant qu'elle n'a pas été
+faite. Pas affichées avec un avertissement — **pas affichées du tout**.
 
 ### Phase 4 — Théorie + notation sur portée
 - Parcours de 11 leçons (contenu « as code », blocs prose/manche/audio/exercice).

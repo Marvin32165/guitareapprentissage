@@ -4,13 +4,9 @@
 // l'appareil où on écoute : il vit dans localStorage, pas en base.
 
 import { setGuitarSource, getGuitarSource } from "./guitar";
-import { SOURCES, type SourceId } from "./sources";
+import { isSourceId, type SourceId } from "./source-ids";
 
 const KEY = "guitare.source-audio";
-
-function isSourceId(value: string): value is SourceId {
-  return SOURCES.some((s) => s.id === value);
-}
 
 export function readStoredSource(): SourceId | null {
   if (typeof localStorage === "undefined") return null;

@@ -4,13 +4,9 @@
 // échantillonné corde par corde) consiste à ajouter une entrée ici, sans
 // toucher au moteur ni à l'interface.
 
-export type SourceId =
-  | "synth"
-  | "iowa"
-  | "fluid-steel"
-  | "fluid-nylon"
-  | "hybride"
-  | "martin";
+import { type SourceId } from "./source-ids";
+
+export type { SourceId };
 
 export interface SampleSource {
   id: SourceId;
