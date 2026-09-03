@@ -494,14 +494,14 @@ pas partie du bundle de production déployé sur Vercel. Ne pas lancer
    - 4a ✅ **Parcours + 4 premières leçons + exercices** (notes sur le manche,
      intervalles, gamme majeure, CAGED) **→ déploiement Vercel + Turso**
    - 4b ✅ **Notation sur portée (VexFlow) + parcours de lecture**
-   - 4c ⬜ Les 7 leçons restantes + formes d'accords ouverts (CAGED)
+   - 4c ✅ **Les 7 leçons restantes + formes d'accords ouverts**
 
 **Ordre de travail en cours** (priorité : résultat abouti plutôt que mise en
 service rapide) : **chantier A — refonte du son** (🔄 en cours : six sources
 comparables sur `/demo/audio`, en attente du verdict à l'oreille), puis
 **chantier B** — déclaration des `conceptId` dans le typage des leçons, en
 prévision de la répétition espacée — puis 4b, 4c, 5, 6, 7.
-5. ⬜ Module oreille (+ exercice de conversion latin ↔ anglo)
+5. ⬜ **Module oreille** (+ exercice de conversion latin ↔ anglo) — prochaine étape
 6. ⬜ Module métronome & technique (+ détection micro, backing tracks échantillonnés)
 7. ⬜ Module progression (répétition espacée, routine, stats, répertoire,
    analyse de session, export/import JSON)
@@ -551,6 +551,28 @@ Les notions travaillées sont affichées en tête de chaque leçon.
   principal ; le relevé de note affiche les deux (« Mi (E) »).
 - *Reporté en phase 4* : bibliothèque de **formes d'accords ouverts** (CAGED)
   rendues sur le manche — utile surtout dans les leçons CAGED.
+
+### Phase 4c — Leçons 5 à 11 et accords ouverts : fait
+
+Onze leçons au total. Les sept ajoutées suivent la même règle que les
+précédentes : chaque notion est ancrée sur un diagramme, un son et un exercice.
+
+**Les formes d'accords sont les seules données saisies à la main du projet**
+— un doigté est un fait, pas une conséquence de formule. Elles sont donc
+confrontées au moteur théorique : les hauteurs produites par chaque doigté
+doivent former exactement l'accord annoncé (ni note étrangère, ni note
+manquante), la basse doit être la fondamentale, et un doigt doit être indiqué là
+où une case est pressée et nulle part ailleurs. Une case fausse donnerait sinon
+un accord faux, enseigné comme juste.
+
+**Un garde-fou a servi.** L'exercice sur le mode lydien demandait de cliquer une
+quarte augmentée dans la gamme de Fa majeur — où elle n'existe pas : Fa majeur
+contient un Si♭. Le test « chaque exercice de manche est résoluble » l'a
+attrapé. La correction n'est pas cosmétique, elle est la notion elle-même :
+`FretboardSpec` sépare désormais la gamme affichée de la note qui sert à
+compter les degrés (`degreeRoot`). Fa lydien, ce sont les notes de **Do** majeur
+numérotées depuis **Fa** — et c'est ce décalage qui fait apparaître la quarte
+augmentée.
 
 ### Phase 4b — Notation sur portée : fait, et comment
 

@@ -16,6 +16,13 @@ export interface FretboardSpec {
     | "chordMaj"
     | "chordMin"
     | "box";
+  /**
+   * Note de référence des degrés, si elle diffère de la fondamentale de la
+   * gamme. C'est exactement ce qu'est un mode : les notes de Do majeur, mais
+   * numérotées depuis Fa. Sans cette séparation, on ne peut pas montrer une
+   * quarte augmentée — elle n'existe dans aucune gamme majeure.
+   */
+  degreeRoot?: string;
   /** Pour kind "box" : 1..5 et la qualité de la pentatonique. */
   boxIndex?: number;
   boxQuality?: "minor" | "major";
@@ -62,6 +69,8 @@ export type LessonBlock =
   | { kind: "callout"; tone: "info" | "warn"; text: string }
   | { kind: "table"; head: string[]; rows: string[][] }
   | { kind: "fretboard"; caption?: string; spec: FretboardSpec }
+  /** Formes d'accords ouverts, jouables au toucher. */
+  | { kind: "chords"; caption?: string; shapeIds: string[] }
   | { kind: "exercise"; exercise: Exercise };
 
 export interface Lesson {
