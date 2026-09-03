@@ -23,7 +23,7 @@
 //     posée sur du silence ».
 
 import { startAudio, playMidi } from "./engine";
-import { getSource, resolveUrls, type SourceId } from "./sources";
+import { getSource, resolveUrls, trimForUrl, type SourceId } from "./sources";
 import { loadBuffer } from "./buffers";
 
 /**
@@ -239,9 +239,12 @@ export async function pluck(options: PluckOptions): Promise<void> {
     source.playbackRate.value = Math.pow(2, (midi - sample.midi) / 12);
 
     const gain = r.ctx.createGain();
+    // Égalisation de niveau entre jeux, sinon le plus fort paraît le meilleur.
+    const level =
+      Math.max(0.05, Math.min(velocity, 1)) * Math.pow(10, trimForUrl(sample.url) / 20);
     // Attaque très courte plutôt qu'instantanée : évite le clic de démarrage.
     gain.gain.setValueAtTime(0.0001, at);
-    gain.gain.linearRampToValueAtTime(Math.max(0.05, Math.min(velocity, 1)), at + 0.004);
+    gain.gain.linearRampToValueAtTime(level, at + 0.004);
 
     source.connect(gain);
     gain.connect(r.strings[index].input);
@@ -264,6 +267,18 @@ export async function pluck(options: PluckOptions): Promise<void> {
     reportFallback("pluck", error);
     await playMidi(midi, durationSec ?? 1.4);
   }
+}
+
+/**
+ * Précharge les échantillons nécessaires à une série de notes. Indispensable
+ * avant une comparaison A/B : un silence de chargement entre les deux extraits
+ * suffit à fausser le jugement.
+ */
+export async function preloadForMidis(sourceId: SourceId, midis: number[]): Promise<void> {
+  const r = await ensureRig(sourceId);
+  if (!r) return;
+  const urls = new Set(midis.map((m) => nearestSample(r.layout, m).url));
+  await Promise.all([...urls].map((u) => loadBuffer(r.ctx, u).catch(() => null)));
 }
 
 export interface StrumPosition {

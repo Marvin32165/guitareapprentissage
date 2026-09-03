@@ -55,9 +55,9 @@ export default function HomePage() {
             <Icon name="ear" className="h-5 w-5" />
           </span>
           <span>
-            <span className="block font-medium text-neutral-100">Comparaison des sources audio</span>
+            <span className="block font-medium text-neutral-100">Choisir le son de l&apos;application</span>
             <span className="mt-0.5 block text-sm text-neutral-500">
-              Six sons de guitare sur les mêmes notes — à juger à l&apos;oreille.
+              Cinq questions, à l&apos;aveugle : tu dis lequel tu préfères.
             </span>
           </span>
         </Link>

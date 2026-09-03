@@ -4,6 +4,15 @@ Tout fichier audio embarqué dans ce dépôt est listé ici, avec son origine, s
 licence et l'attribution exigée par cette licence. Rien n'est ajouté à
 `public/audio/` sans une ligne correspondante dans ce fichier.
 
+## Note sur les niveaux
+
+Aucun fichier n'est modifié pour l'égalisation de volume : la correction est un
+**gain appliqué à la lecture**, calculé à partir d'une mesure EBU R128 de chaque
+jeu (Iowa −20,8 LUFS, FluidR3 acier −33,1, FluidR3 nylon −30,9, Martin −22,5,
+ramenés à −23). Les échantillons distribués ici restent donc bit à bit ceux de
+leur source, à l'exception du jeu Martin, dont les modifications sont détaillées
+plus bas.
+
 ## Résumé des licences en présence
 
 | Licence | Ce qu'elle impose | Sources concernées |

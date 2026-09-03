@@ -3,7 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import { AudioUnlockButton } from "@/components/audio/AudioProvider";
 import { SOURCES, getSource, type SourceId } from "@/lib/audio/sources";
-import { playFromSource, playSequence } from "@/lib/audio/sampler";
+import { pluck, preloadForMidis } from "@/lib/audio/guitar";
 import {
   getServerSourceSnapshot,
   getSourceSnapshot,
@@ -22,7 +22,6 @@ function midiLabel(midi: number): string {
 
 export function AudioCompare() {
   const [source, setSource] = useState<SourceId>("martin");
-  const [gains, setGains] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [loaded, setLoaded] = useState<Record<string, boolean>>({});
   const retenue = useSyncExternalStore(
@@ -32,12 +31,11 @@ export function AudioCompare() {
   );
 
   const current = getSource(source);
-  const gainDb = gains[source] ?? 0;
 
-  async function play(midi: number, key: string) {
+  async function play(midi: number, key: string, stringIndex = 5) {
     setBusy(key);
     try {
-      await playFromSource(source, midi, { gainDb });
+      await pluck({ stringIndex, midi, sourceId: source });
       setLoaded((l) => ({ ...l, [source]: true }));
     } finally {
       setBusy(null);
@@ -47,7 +45,11 @@ export function AudioCompare() {
   async function sequence(midis: number[], key: string) {
     setBusy(key);
     try {
-      await playSequence(source, midis, { gainDb });
+      await preloadForMidis(source, midis);
+      for (let i = 0; i < midis.length; i++) {
+        void pluck({ stringIndex: 5, midi: midis[i], sourceId: source, durationSec: 1.2 });
+        if (i < midis.length - 1) await new Promise((r) => setTimeout(r, 420));
+      }
       setLoaded((l) => ({ ...l, [source]: true }));
     } finally {
       setBusy(null);
@@ -103,24 +105,9 @@ export function AudioCompare() {
 
       {/* Égalisation du niveau — indispensable pour une comparaison honnête */}
       <section className="space-y-2">
-        <label className="flex flex-col gap-1 text-sm text-neutral-400">
-          Niveau de cette source : {gainDb > 0 ? "+" : ""}
-          {gainDb} dB
-          <input
-            type="range"
-            min={-12}
-            max={12}
-            step={1}
-            value={gainDb}
-            onChange={(e) =>
-              setGains((g) => ({ ...g, [source]: Number(e.target.value) }))
-            }
-            className="w-full accent-emerald-500"
-          />
-        </label>
         <p className="text-xs text-neutral-600">
-          Égalise les niveaux à l&apos;oreille avant de juger : une source plus forte
-          paraît toujours meilleure.
+          Les niveaux des six sources sont égalisés automatiquement (mesure EBU
+          R128) : ce que tu compares ici, c&apos;est le timbre, pas le volume.
         </p>
       </section>
 
@@ -154,7 +141,7 @@ export function AudioCompare() {
                         <td key={f}>
                           <button
                             type="button"
-                            onClick={() => play(midi, key)}
+                            onClick={() => play(midi, key, stringIndex)}
                             className={
                               "min-h-11 w-full rounded-lg border border-neutral-700 px-1 text-sm transition-colors " +
                               (busy === key

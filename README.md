@@ -219,6 +219,31 @@ détail des licences, des provenances et des retouches est dans
 | 5 | Hybride Iowa + FluidR3 | Ré2 → Do8, raccord à Ré5 | CC-BY 3.0 | — |
 | 6 | **Martin HD28** | **Mi2 → Si5, un échantillon / 3 demi-tons** | **CC0 1.0** | **345 ko opus / 428 ko mp3** |
 
+### Comment le choix se fait
+
+`/demo/audio` propose deux modes. Par défaut, la **comparaison guidée** :
+cinq manches, deux extraits par manche, une seule question — lequel tu
+préfères. Les noms sont **cachés** jusqu'au verdict (sinon c'est l'étiquette
+qu'on juge : « captations réelles » gagne d'avance), et le gagnant de chaque
+manche affronte le suivant. Aucune habitude d'écoute comparative n'est
+nécessaire. L'**exploration libre** garde la grille corde par corde et les
+tests ciblés, pour vérifier un point précis quand on sait ce qu'on cherche.
+
+**Les niveaux sont égalisés automatiquement.** Mesurés à l'EBU R128, les jeux
+s'écartaient de plus de **12 dB** (FluidR3 acier à −33,1 LUFS, Iowa à
+−20,8) : une source 12 dB plus forte est jugée meilleure quelle que soit sa
+qualité. C'est le biais le plus grossier d'une comparaison à l'oreille, et le
+seul que l'auditeur ne peut pas corriger sans matériel de mesure — le laisser
+à un curseur manuel revenait à demander une compétence d'ingénieur du son.
+La correction est appliquée **par dossier d'échantillons**, et non par source :
+l'hybride mélange deux captations, et son « raccord » aurait sinon été un saut
+de volume de 12 dB plutôt qu'une différence de timbre. Les fichiers ne sont pas
+modifiés, la correction est un gain à la lecture.
+
+La comparaison passe par le **même moteur** que le reste de l'application
+(`guitar.ts`, avec traitement par corde et petite pièce) : ce qu'on juge est
+exactement ce qu'on obtiendra.
+
 **Recommandation, à confirmer à l'oreille : la 6.** Elle est arrivée après la
 construction de la page, en fouillant les dépôts SFZ ouverts sur GitHub. C'est
 une vraie Martin HD28, un seul instrument sur toute l'étendue utile — donc ni

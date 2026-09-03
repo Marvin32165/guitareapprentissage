@@ -149,6 +149,39 @@ export function resolveUrls(src: SampleSource): Record<string, string> | null {
   return Object.fromEntries(midis.map((m) => [String(m), `${base}/${m}.${chosen.ext}`]));
 }
 
+/**
+ * Égalisation de niveau, en dB, par dossier d'échantillons.
+ *
+ * Mesuré à l'EBU R128 (loudness intégrée) sur l'ensemble de chaque jeu, puis
+ * ramené à une cible commune de −23 LUFS. Sans ça, les jeux s'écartent de plus
+ * de 12 dB : FluidR3 acier est à −33,1 LUFS quand Iowa est à −20,8. Une source
+ * 12 dB plus forte est jugée meilleure quelle que soit sa qualité — c'est le
+ * biais le plus grossier d'une comparaison à l'oreille, et le seul que
+ * l'auditeur ne peut pas corriger sans matériel de mesure.
+ *
+ * L'application est par dossier et non par source : l'hybride mélange deux
+ * captations, et son « raccord » serait sinon un saut de volume de 12 dB
+ * plutôt qu'une différence de timbre.
+ */
+const TRIM_DB: Record<string, number> = {
+  iowa: -2.2,
+  "fluid-steel": 10.1,
+  "fluid-nylon": 7.9,
+  martin: -0.5,
+};
+
+/**
+ * Niveau de la synthèse, estimé par rendu hors ligne (RMS) et non par mesure
+ * R128 : approximatif, contrairement aux quatre autres.
+ */
+export const SYNTH_TRIM_DB = -3;
+
+/** Correction de niveau à appliquer à un échantillon, d'après son chemin. */
+export function trimForUrl(url: string): number {
+  const folder = url.split("/audio/compare/")[1]?.split("/")[0];
+  return folder ? (TRIM_DB[folder] ?? 0) : 0;
+}
+
 export function getSource(id: SourceId): SampleSource {
   const s = SOURCES.find((x) => x.id === id);
   if (!s) throw new Error(`Source inconnue : ${id}`);
