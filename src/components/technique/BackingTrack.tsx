@@ -172,18 +172,24 @@ export function BackingTrack() {
         />
       </label>
 
-      <label className="flex items-center gap-3 text-sm text-neutral-400">
-        <input
-          type="checkbox"
-          checked={withClick}
-          onChange={(e) => {
-            setWithClick(e.target.checked);
-            if (enMarche) arreter();
-          }}
-          className="h-5 w-5 accent-emerald-500"
-        />
-        Ajouter le clic du métronome
-      </label>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={withClick}
+        onClick={() => {
+          setWithClick((v) => !v);
+          if (enMarche) arreter();
+        }}
+        className={
+          "flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border px-4 text-sm transition-colors " +
+          (withClick
+            ? "border-emerald-700 bg-emerald-950/20 text-emerald-300"
+            : "border-neutral-700 text-neutral-300 hover:bg-neutral-900")
+        }
+      >
+        <span>Clic du métronome par-dessus</span>
+        <span className="text-xs">{withClick ? "activé" : "coupé"}</span>
+      </button>
 
       <button
         type="button"

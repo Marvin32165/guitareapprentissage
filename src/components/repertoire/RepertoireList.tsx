@@ -221,7 +221,7 @@ function Groupe({
             <button
               type="button"
               onClick={() => onDelete(s.id)}
-              className="mt-2 text-xs text-neutral-600 underline underline-offset-4 hover:text-neutral-400"
+              className="mt-2 inline-flex min-h-11 items-center text-xs text-neutral-600 underline underline-offset-4 hover:text-neutral-400"
             >
               Retirer
             </button>

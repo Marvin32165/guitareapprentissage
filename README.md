@@ -52,6 +52,12 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 En production, dès que `TURSO_DATABASE_URL` est défini, le client Prisma bascule
 automatiquement sur Turso ; sinon il utilise `DATABASE_URL`.
 
+### Variable optionnelle
+
+| Variable | Rôle |
+| --- | --- |
+| `ANTHROPIC_API_KEY` | Active le **retour rédigé** sur une séance. Sans elle, la fonction est indisponible et le dit ; tout le reste fonctionne. La clé reste côté serveur, jamais exposée au client. |
+
 ## Scripts
 
 | Script                | Action                                          |
@@ -470,6 +476,30 @@ audible** que celui que tu voulais éviter. C'est précisément pour ça que la
 source 6, qui supprime le problème au lieu de le rapiécer, est la bonne
 réponse si elle te plaît à l'écoute.
 
+## Vérification responsive — 375 / 768 / 1440
+
+Les trois largeurs exigées sont vérifiées au navigateur sur les dix pages :
+**aucun débordement horizontal, aucune cible tactile sous 44 px.**
+
+Trois défauts réels trouvés par cette vérification, qu'aucun test unitaire
+n'aurait attrapés :
+
+- **Le manche débordait de 436 px** sur `/technique`. Trois appelants sur six
+  l'enveloppaient dans un conteneur défilant, trois l'avaient oublié. Le
+  défilement appartient désormais au composant lui-même : un appelant ne peut
+  plus se tromper.
+- **À 768 px, toute la page passait à 1072 px** dès l'apparition de la barre
+  latérale. Cause classique : sans `min-w-0`, un enfant flex ne rétrécit pas
+  sous la largeur de son contenu, et un SVG à largeur explicite pousse tout le
+  reste.
+- **Curseurs, cases à cocher et bascules sous 44 px** (16, 20 et 40 px). Les
+  curseurs sont rehaussés par une règle globale ; la case à cocher du
+  métronome est devenue un vrai bouton bascule, plus sûr au doigt.
+
+Ces corrections sont figées par des tests statiques : le symptôme (une page qui
+défile latéralement au téléphone) se relie mal à sa cause, et disparaîtrait
+sans bruit au prochain remaniement.
+
 ## Sécurité — avertissement d'audit
 
 `npm audit` peut signaler quelques vulnérabilités : elles proviennent
@@ -503,9 +533,9 @@ comparables sur `/demo/audio`, en attente du verdict à l'oreille), puis
 prévision de la répétition espacée — puis 4b, 4c, 5, 6, 7.
 5. ✅ **Module oreille** — intervalles, qualités d'accord, degrés, conversion latin ↔ anglo
 6. ✅ **Module technique** — métronome, calibration de latence, accompagnements engendrés
-7. ⬜ **Module progression** (répétition espacée, routine, stats, répertoire,
-   analyse de session, export/import JSON) — prochaine étape
-8. ⬜ Déploiement final
+7. ✅ **Module progression** — répétition espacée SM-2, routine, statistiques,
+   répertoire, analyse de séance, export/import JSON, file hors-ligne
+8. ✅ Déployé en continu sur `main` (Vercel)
 
 Le détail des ajouts par phase est dans la **feuille de route** ci-dessous.
 
