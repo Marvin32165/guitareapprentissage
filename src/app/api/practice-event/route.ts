@@ -20,6 +20,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Requête invalide." }, { status: 400 });
   }
 
-  await prisma.practiceEvent.create({ data: { type, refId, correct, quality } });
-  return NextResponse.json({ ok: true });
+  try {
+    await prisma.practiceEvent.create({ data: { type, refId, correct, quality } });
+  } catch {
+    return NextResponse.json({ ok: false, persisted: false, reason: "no-database" });
+  }
+  return NextResponse.json({ ok: true, persisted: true });
 }

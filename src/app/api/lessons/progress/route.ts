@@ -18,11 +18,17 @@ export async function POST(request: Request) {
   }
 
   const completedAt = status === "completed" ? new Date() : null;
-  await prisma.lessonProgress.upsert({
-    where: { lessonId },
-    create: { lessonId, status, completedAt },
-    update: { status, completedAt },
-  });
+  try {
+    await prisma.lessonProgress.upsert({
+      where: { lessonId },
+      create: { lessonId, status, completedAt },
+      update: { status, completedAt },
+    });
+  } catch {
+    // Pas de base configurée (ou injoignable) : l'app reste utilisable,
+    // simplement sans mémoriser la progression.
+    return NextResponse.json({ ok: false, persisted: false, reason: "no-database" });
+  }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, persisted: true });
 }

@@ -105,70 +105,68 @@ turso db shell <nom-base> < prisma/migrations/<horodatage>_ma_migration/migratio
 
 ## Déploiement (Vercel + Turso) — runbook
 
-La branche `main` est la branche de production : c'est elle que Vercel construit.
-Le code y est déjà fusionné et le build est vérifié. Il reste les étapes qui
-nécessitent **tes comptes** Turso et Vercel.
+`main` est la branche de production : c'est elle que Vercel construit. Le code
+y est fusionné et le build est vérifié.
 
-### 1. Créer la base Turso
+L'app démarre **sans base de données** : tu peux déployer en deux minutes avec
+deux variables, puis brancher Turso quand tu veux pour mémoriser la progression.
 
-```bash
-# Installer la CLI (une fois)
-curl -sSfL https://tur.so/install.sh | bash
-turso auth login
+### Option A — mettre en ligne tout de suite (2 variables, ~2 min)
 
-turso db create guitare
-turso db show guitare --url            # -> TURSO_DATABASE_URL (libsql://…)
-turso db tokens create guitare         # -> TURSO_AUTH_TOKEN
-```
+Tu obtiens les leçons, le manche interactif et les exercices. La progression
+n'est pas encore mémorisée (un bandeau te le rappelle dans l'app).
 
-### 2. Appliquer le schéma à Turso
-
-Les migrations sont dans `prisma/migrations/`. On applique leur SQL dans l'ordre :
-
-```bash
-for f in prisma/migrations/*/migration.sql; do
-  echo "-- $f"
-  turso db shell guitare < "$f"
-done
-```
-
-Vérifier que les tables existent :
-
-```bash
-turso db shell guitare ".tables"
-```
-
-### 3. Générer un secret de session
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-### 4. Créer le projet Vercel
-
-1. vercel.com → **Add New… → Project** → importer `guitareapprentissage`.
-2. Framework : Next.js (détecté). Aucun réglage de build à changer.
-3. **Production Branch : `main`** (Settings → Git).
-4. Variables d'environnement (Settings → Environment Variables, *Production*) :
+1. Générer un secret :
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+2. vercel.com → **Add New… → Project** → importer `guitareapprentissage`.
+   Framework Next.js détecté, aucun réglage de build à changer.
+3. Settings → Git → **Production Branch : `main`**.
+4. Settings → Environment Variables (*Production*) :
 
    | Variable | Valeur |
    | --- | --- |
-   | `APP_PASSWORD` | le mot de passe que tu veux pour entrer dans l'app |
-   | `SESSION_SECRET` | la chaîne générée à l'étape 3 |
-   | `TURSO_DATABASE_URL` | l'URL `libsql://…` de l'étape 1 |
-   | `TURSO_AUTH_TOKEN` | le jeton de l'étape 1 |
+   | `APP_PASSWORD` | le mot de passe pour entrer dans l'app |
+   | `SESSION_SECRET` | la chaîne générée à l'étape 1 |
 
-   `DATABASE_URL` n'est **pas** nécessaire en production : dès que
-   `TURSO_DATABASE_URL` est défini, le client Prisma bascule sur Turso.
-5. **Deploy**. Le `postinstall` lance `prisma generate` automatiquement.
+5. **Deploy**. Ouvre l'URL : elle redirige vers `/login`. Sur le téléphone,
+   « Ajouter à l'écran d'accueil » installe la PWA.
 
-### 5. Vérifier
+### Option B — activer la persistance (Turso)
 
-- Ouvrir l'URL : elle doit rediriger vers `/login`.
-- Se connecter avec `APP_PASSWORD`.
-- Aller dans **Théorie**, terminer une leçon, revenir au parcours : le badge
-  « Terminée » doit persister (c'est la preuve que Turso répond en écriture).
-- Sur le téléphone : « Ajouter à l'écran d'accueil » pour installer la PWA.
+À faire quand tu veux que les leçons terminées et le journal d'exercices soient
+conservés.
+
+1. Créer la base :
+   ```bash
+   curl -sSfL https://tur.so/install.sh | bash   # une fois
+   turso auth login
+   turso db create guitare
+   turso db show guitare --url        # -> TURSO_DATABASE_URL (libsql://…)
+   turso db tokens create guitare     # -> TURSO_AUTH_TOKEN
+   ```
+2. Appliquer le schéma (les migrations, dans l'ordre) :
+   ```bash
+   for f in prisma/migrations/*/migration.sql; do
+     echo "-- $f"; turso db shell guitare < "$f"
+   done
+   turso db shell guitare ".tables"   # vérification
+   ```
+3. Ajouter sur Vercel `TURSO_DATABASE_URL` et `TURSO_AUTH_TOKEN`, puis
+   **redéployer**. (`DATABASE_URL` n'est pas utilisé en production : dès que
+   `TURSO_DATABASE_URL` existe, le client Prisma bascule sur Turso.)
+
+### Vérifier que la persistance marche
+
+Va dans **Théorie**, termine une leçon, reviens au parcours et recharge : le
+badge « Terminée » doit rester, et le bandeau d'avertissement doit avoir disparu.
+
+### Pourquoi pas d'hébergement dans l'environnement Claude
+
+Le conteneur de développement est éphémère (il redémarre seul et coupe tout
+serveur lancé), et il n'expose aucun ingress public. Il sert à construire et à
+tester, pas à héberger.
 
 ## Sécurité — avertissement d'audit
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LESSONS, exerciseCount } from "@/content/lessons";
-import { prisma } from "@/lib/db/prisma";
+import { prisma, isDatabaseConfigured } from "@/lib/db/prisma";
 
 export const metadata: Metadata = { title: "Théorie" };
 export const dynamic = "force-dynamic";
@@ -22,7 +22,8 @@ const BADGE: Record<string, { label: string; className: string }> = {
 };
 
 export default async function TheoriePage() {
-  const progress = await loadProgress();
+  const persistence = isDatabaseConfigured();
+  const progress = persistence ? await loadProgress() : {};
   const doneCount = LESSONS.filter((l) => progress[l.slug] === "completed").length;
 
   return (
@@ -37,6 +38,15 @@ export default async function TheoriePage() {
           {doneCount} / {LESSONS.length} leçons terminées
         </p>
       </header>
+
+      {!persistence && (
+        <p className="rounded-xl border border-amber-700/60 bg-amber-900/20 px-4 py-3 text-sm text-amber-200">
+          Aucune base de données configurée : les leçons et les exercices
+          fonctionnent, mais ta progression n&apos;est pas mémorisée. Ajoute
+          <span className="font-mono"> TURSO_DATABASE_URL </span>
+          pour l&apos;activer.
+        </p>
+      )}
 
       <ol className="space-y-3">
         {LESSONS.map((l) => {
