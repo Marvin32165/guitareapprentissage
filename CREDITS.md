@@ -1,4 +1,125 @@
-# Crédits et licences des échantillons audio
+# Crédits et licences des données embarquées
+
+Tout contenu tiers embarqué dans ce dépôt — échantillons audio, jeux de
+données — est listé ici, avec son origine, sa licence et l'attribution exigée
+par cette licence. Rien n'est ajouté à `public/audio/` ni à
+`src/content/progressions/` sans une ligne correspondante dans ce fichier.
+
+- [Corpus de progressions d'accords](#corpus-de-progressions-daccords) —
+  **CC BY-NC-SA 3.0**, à lire avant tout usage commercial
+- [Échantillons audio](#échantillons-audio) — CC0 et CC-BY
+
+---
+
+# Corpus de progressions d'accords
+
+## Ce que c'est
+
+`src/content/progressions/donnees.ts` : 10 451 morceaux, ramenés chacun à des
+**progressions en degrés** (I, V, vi, IV…). Ni mélodie, ni tablature, ni accords
+réels d'un morceau : uniquement des relations entre hauteurs, plus un titre et
+un nom d'artiste.
+
+- **Source** : [Hooktheory dataset](https://github.com/chrisdonahue/sheetsage#hooktheory-dataset),
+  publié par **Chris Donahue** avec le système *Sheet Sage*, à partir des
+  annotations de la [TheoryTab DB de Hooktheory](https://www.hooktheory.com/theorytab)
+- **Fichier récupéré** : `Hooktheory.json.gz`, 20 075 896 octets,
+  SHA-256 `917b7cd58f5f4e07d6c36acf7bfad958c99ee05472dab3555399141094698e0c`
+  — **identique à l'empreinte publiée** dans le README de Sheet Sage
+- **Publication** : Donahue, Thickstun, Liang, *Melody transcription via
+  generative pre-training*, ISMIR 2022 ([arXiv:2212.01884](https://arxiv.org/abs/2212.01884))
+
+Rien n'a été moissonné : le jeu de données est distribué en un fichier, par son
+auteur, avec son empreinte.
+
+## Licence : CC BY-NC-SA 3.0 — et ce que ça implique vraiment
+
+Le fichier `LICENSE` de Sheet Sage est explicite :
+
+> IMPORTANT NOTE: All \*code\* in this repository is MIT-licensed, but dataset
+> and trained models are distributed under CC BY-NC-SA 3.0, as they are derived
+> from user contributions on HookTheory (https://forum.hooktheory.com/tos).
+
+Donc : **réutilisation autorisée**, sous trois conditions.
+
+| Clause | Ce qu'elle impose ici |
+| --- | --- |
+| **BY** (attribution) | Créditer Chris Donahue et Hooktheory. Fait dans ce fichier, en tête du fichier généré, et dans l'interface. |
+| **NC** (pas d'usage commercial) | Cette app ne peut pas être vendue, ni monétisée, ni intégrée à une offre payante tant que ces données y sont. |
+| **SA** (partage à l'identique) | Toute **adaptation** des données se rediffuse sous la même licence. `src/content/progressions/donnees.ts` est une adaptation : il est sous CC BY-NC-SA 3.0. |
+
+### Le point qui mérite d'être dit franchement
+
+Ailleurs dans ce fichier, la banque d'échantillons **MusyngKite a été écartée
+précisément à cause d'une clause de partage à l'identique**. Il faut donc
+assumer l'écart plutôt que le taire.
+
+Ce n'est pas la même situation, pour deux raisons :
+
+1. **Contenance.** La clause porte sur *l'œuvre et ses adaptations*. Ici
+   l'adaptation est **un seul fichier généré**, clairement identifié, produit
+   par **un seul script** (`scripts/build-progressions.mjs`). Le reste du dépôt
+   ne dérive pas des données : il les lit.
+2. **Réversibilité.** Supprimer `src/content/progressions/` et le script suffit
+   à faire disparaître la contrainte : c'est un commit, pas une refonte.
+
+Ce qu'on ne peut pas affirmer : qu'un juriste tracerait la frontière exactement
+là. La question « où s'arrête l'adaptation et où commence la simple
+agrégation » n'a pas de réponse tranchée, et je ne suis pas juriste. La lecture
+sûre, celle qui est retenue ici : **ne jamais commercialiser cette app tant que
+ces données y sont, et garder l'attribution partout où les progressions sont
+affichées.**
+
+Comme cette app est personnelle, mono-utilisateur, sans compte et sans offre
+payante, la clause NC ne coûte rien aujourd'hui. Elle coûterait le jour où
+l'app changerait de nature — c'est ce jour-là qu'il faudra revenir ici.
+
+## Ce qui a été écarté, et pourquoi
+
+Deux autres dépôts sont souvent cités pour « les 5000 progressions ». Aucun
+n'est utilisable :
+
+- [`DataStrategist/Musical-chord-progressions`](https://github.com/DataStrategist/Musical-chord-progressions)
+  — celui du billet « Chord progressions of 5000 songs ». Son `LICENSE.txt` dit
+  mot pour mot : *« License for data unknown. Please contact HookTheory.com
+  directly. »* **Licence des données inconnue : inutilisable.** Une licence
+  inconnue n'est pas une licence permissive.
+- [`owencm/hooktheory-data`](https://github.com/owencm/hooktheory-data) —
+  **aucun fichier de licence**, et son README décrit des dumps XML obtenus en
+  interrogeant `hooktheory.com/songs/getXmlByPk?pk=…` : c'est un moissonnage.
+  Écarté deux fois : pas de licence, et contraire à la règle du projet.
+
+## Poids
+
+| Élément | Octets |
+| --- | --- |
+| `donnees.ts` (source TypeScript) | 510 414 (498 ko) |
+| dont vocabulaire des degrés | 910 |
+| dont table des 7 631 progressions | 68 679 |
+| dont 10 451 morceaux (titre + artiste + progression) | 285 019 |
+| dont index progression → morceaux | 138 902 |
+| **transmis au navigateur (brotli)** | **≈ 205 ko** |
+
+Ce fichier n'est **pas** dans le bundle de démarrage : il est chargé par
+`import()` dynamique quand une vue de progressions s'ouvre pour la première
+fois, puis gardé par le service worker comme n'importe quel `/_next/static`.
+Il est donc téléchargé une fois, et la recherche fonctionne ensuite hors-ligne.
+
+## Reconstruire le fichier
+
+```sh
+curl -LO https://github.com/chrisdonahue/sheetsage-data/raw/refs/heads/main/hooktheory/Hooktheory.json.gz
+sha256sum Hooktheory.json.gz   # doit donner 917b7cd5…98e0c
+gunzip Hooktheory.json.gz
+node --max-old-space-size=6144 scripts/build-progressions.mjs \
+     Hooktheory.json src/content/progressions/donnees.ts
+```
+
+Le fichier de 309 Mo n'est **pas** versionné : seul le produit fini l'est.
+
+---
+
+# Échantillons audio
 
 Tout fichier audio embarqué dans ce dépôt est listé ici, avec son origine, sa
 licence et l'attribution exigée par cette licence. Rien n'est ajouté à
@@ -21,8 +142,12 @@ plus bas.
 | CC-BY 3.0 | Créditer l'auteur ; usage commercial et modification autorisés | University of Iowa, FluidR3_GM |
 
 Aucun échantillon sous CC-BY-**SA** n'est utilisé : la clause de partage à
-l'identique contaminerait le dépôt. C'est pourquoi la banque **MusyngKite**,
-pourtant de meilleure qualité que FluidR3, a été écartée.
+l'identique contaminerait le dossier `public/audio/` tout entier, où les six
+jeux cohabitent. C'est pourquoi la banque **MusyngKite**, pourtant de meilleure
+qualité que FluidR3, a été écartée. Le corpus de progressions, lui, est sous
+CC BY-NC-SA et tient dans un seul fichier généré : voir
+[la section qui lui est consacrée](#corpus-de-progressions-daccords), où l'écart
+est assumé et expliqué.
 
 
 ---
