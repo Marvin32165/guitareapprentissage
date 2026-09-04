@@ -3,8 +3,10 @@
 import { useState } from "react";
 import type { MorceauCorpus } from "@/content/progressions/recherche";
 
-// Liste de morceaux du corpus. Le lien renvoie à la fiche d'origine : on
-// affiche une analyse faite par quelqu'un d'autre, autant pouvoir la vérifier.
+// Liste de morceaux du corpus. Quand la source publie une fiche, le titre y
+// renvoie : on affiche une analyse faite par quelqu'un d'autre, autant pouvoir
+// aller la vérifier. Les sources qui n'en publient pas donnent une ligne
+// simple plutôt qu'un faux lien.
 
 const VISIBLES = 8;
 
@@ -27,19 +29,33 @@ export function ListeMorceaux({
   return (
     <div className="space-y-2">
       <ul className="divide-y divide-neutral-800/70 rounded-xl border border-neutral-800">
-        {montres.map((m) => (
-          <li key={m.id}>
-            <a
-              href={m.url}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="flex min-h-11 flex-col justify-center px-3 py-2 hover:bg-neutral-900/60"
-            >
+        {montres.map((m) => {
+          const dedans = (
+            <>
               <span className="text-sm text-neutral-200">{m.titre}</span>
-              <span className="text-xs text-neutral-500">{m.artiste}</span>
-            </a>
-          </li>
-        ))}
+              <span className="text-xs text-neutral-500">
+                {m.artiste || "auteur inconnu"}
+                {m.credit === "compositeur" && m.artiste ? " · compositeur" : ""}
+              </span>
+            </>
+          );
+          return (
+            <li key={m.id}>
+              {m.url ? (
+                <a
+                  href={m.url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="flex min-h-11 flex-col justify-center px-3 py-2 hover:bg-neutral-900/60"
+                >
+                  {dedans}
+                </a>
+              ) : (
+                <div className="flex min-h-11 flex-col justify-center px-3 py-2">{dedans}</div>
+              )}
+            </li>
+          );
+        })}
       </ul>
       <div className="flex flex-wrap items-center gap-3">
         {morceaux.length > VISIBLES && (

@@ -608,22 +608,38 @@ mesures restent affichées telles quelles.
 
 ### Corpus de progressions — fait, sans API
 
-L'API Hooktheory a été abandonnée au profit du **jeu de données public** publié
-avec *Sheet Sage* : pas de compte, pas d'identifiant dans Vercel, pas de jeton
-qui expire, et ça fonctionne hors-ligne. (`api.hooktheory.com` est de toute
-façon inaccessible depuis cet environnement de développement — même politique
-réseau que celle qui bloque Freesound.)
+L'API Hooktheory a été abandonnée au profit de **jeux de données publics** : pas
+de compte, pas d'identifiant dans Vercel, pas de jeton qui expire, et ça
+fonctionne hors-ligne. (`api.hooktheory.com` est de toute façon inaccessible
+depuis cet environnement de développement — même politique réseau que celle qui
+bloque Freesound.)
 
-**Licence vérifiée avant intégration**, comme demandé : **CC BY-NC-SA 3.0**.
-Elle autorise la réutilisation, donc rien ne bloquait — mais la clause de
-partage à l'identique est exactement celle qui avait fait écarter MusyngKite
-côté audio. L'écart est assumé et expliqué en détail dans
-[`CREDITS.md`](CREDITS.md#corpus-de-progressions-daccords). Le point à retenir :
-**cette application ne peut pas être commercialisée tant que ces données y
-sont**, et la contrainte tient dans un seul fichier généré, supprimable en un
-commit. Les deux autres dépôts souvent cités pour « les 5 000 progressions »
-sont écartés : licence des données *inconnue* pour l'un, aucune licence et
-moissonnage pour l'autre.
+**18 599 morceaux**, réunis de deux sources :
+
+| Source | Morceaux | Licence |
+| --- | ---: | --- |
+| Hooktheory / TheoryTab (Sheet Sage) | 12 776 | CC BY-NC-SA 3.0 |
+| ChoCo — Billboard | 785 | CC BY 4.0 |
+| ChoCo — Isophonics (Beatles, Queen…) | 169 | CC BY 4.0 |
+| ChoCo — Robbie Williams | 16 | CC BY 4.0 |
+| ChoCo — Wikifonia | 5 569 | CC BY 4.0 |
+
+**Licences vérifiées avant intégration**, comme demandé, et documentées en
+détail dans [`CREDITS.md`](CREDITS.md#corpus-de-progressions-daccords). ChoCo est
+en CC BY 4.0 — attribution seule — sauf trois sous-collections en CC BY-NC-SA
+4.0 que je ne reprends pas. Hooktheory est en CC BY-NC-SA 3.0. Comme le fichier
+produit mélange les deux, **c'est la licence la plus stricte qui s'applique** :
+cette application ne peut pas être commercialisée tant que les données
+Hooktheory y sont. La contrainte tient dans un seul fichier généré ; retirer la
+seule source Hooktheory ferait retomber l'ensemble en CC BY 4.0, au prix de
+12 776 morceaux.
+
+Les deux dépôts souvent cités pour « les 5 000 progressions » sont écartés :
+licence des données *inconnue* pour l'un, aucune licence et moissonnage pour
+l'autre. Sept partitions de ChoCo sont également laissées de côté — licence,
+absence de tonalité, notation à retraduire, ou **volume sans identité** (The
+Real Book et Band-in-a-Box n'ont aucun nom d'auteur, et des titres comme
+« NOTES »). Le tableau complet est dans `CREDITS.md`.
 
 #### Ce qui est extrait — et ce qui ne l'est pas
 
@@ -631,33 +647,45 @@ Des **degrés**. Uniquement. Pas la mélodie, pas les accords réels d'un morcea
 pas de tablature. Un degré est une relation entre deux hauteurs : un fait de
 théorie. Le titre et l'artiste sont des faits également.
 
-Un morceau n'est retenu que s'il tient dans **une seule tonalité** : un
-changement de tonalité rendrait les degrés faux sur une partie du morceau, et
-une progression fausse enseignée comme vraie est pire que pas de progression.
-Un accord dont la qualité n'est pas reconnue écarte le morceau entier plutôt
-que de laisser un trou. 10 451 morceaux retenus sur 18 675, 7 631 progressions.
+Quatre règles, toutes destinées à ne rien enseigner de faux :
+
+1. Un morceau n'est retenu que s'il tient dans **une seule tonalité**, majeure
+   ou mineure. Les tonalités modales (`G:mixolydian`) sont écartées : leurs
+   degrés ne se comptent ni comme en majeur ni comme en mineur.
+2. Un accord illisible (accord de quinte sans tierce, accord amputé, marque de
+   pédale) **coupe la suite en deux** au lieu d'être sauté. Sauter un accord
+   inventerait un enchaînement qui n'existe pas.
+3. Un accord enrichi est ramené à son noyau — triade plus septième. `C9` et
+   `C13` sont des V7 : les notes en plus ne changent pas le degré.
+4. Les répétitions consécutives sont fusionnées : `I I V V` et `I V` sont la
+   même progression jouée à deux vitesses.
 
 Le chiffrage est celui du moteur d'harmonie de l'app
 (`src/lib/music/degres.ts`), sans quoi le corpus et les leçons parleraient deux
-langues. **Un test le prouve de bout en bout** : les 7 631 progressions sont
+langues. **Un test le prouve de bout en bout** : les 22 614 progressions sont
 jouées en accords réels dans les 12 tonalités, ces accords sont relus comme
-s'ils étaient tapés à la main, puis rechiffrés — 91 572 aller-retours, zéro
+s'ils étaient tapés à la main, puis rechiffrés — 271 368 aller-retours, zéro
 écart.
+
+Une réserve à connaître : **Wikifonia crédite le compositeur**, pas
+l'interprète. « Lonesome Town » y est signé Baker Knight, pas Ricky Nelson.
+L'interface le dit plutôt que de laisser croire à un interprète. Et sur quelques
+morceaux du jeu Billboard, titre et interprète sont intervertis **à la source**.
 
 #### Poids, et comment il est contenu
 
 | Élément | Octets |
-| --- | --- |
-| `src/content/progressions/donnees.ts` | 510 414 (498 ko) |
-| dont vocabulaire des degrés (138 degrés distincts) | 910 |
-| dont table des 7 631 progressions | 68 679 |
-| dont 10 451 morceaux | 285 019 |
-| dont index progression → morceaux | 138 902 |
-| **transmis au navigateur (brotli)** | **≈ 205 ko** |
+| --- | ---: |
+| `src/content/progressions/donnees.ts` | 1 196 571 (1 169 ko) |
+| dont vocabulaire des degrés (158 distincts) | 1 063 |
+| dont table des 22 614 progressions | 203 526 |
+| dont 18 599 morceaux (8 826 lignes source + artiste) | 563 529 |
+| dont index progression → morceaux | 398 710 |
+| **transmis au navigateur (brotli)** | **≈ 465 ko** |
 
 Tout est encodé en chaînes compactes — indices base36, écarts successifs,
-regroupement par artiste — pour que le navigateur lise **quatre chaînes** au
-lieu de construire des dizaines de milliers d'objets.
+regroupement par (source, artiste) — pour que le navigateur lise **quatre
+chaînes** au lieu de construire des dizaines de milliers d'objets.
 
 Le fichier n'est **pas** dans le bundle de démarrage : `import()` dynamique,
 donc son propre morceau de code, vérifié sur le build (aucun manifeste de page
@@ -666,7 +694,8 @@ quel `/_next/static`. **Vérifié sur le build de production** : service worker
 actif, réseau coupé, recherche complète qui répond.
 
 Un test empêche la régression qui le ramènerait dans le bundle de démarrage —
-il suffirait d'un `import` statique dans un composant.
+il suffirait d'un `import` statique dans un composant. Un autre vérifie que la
+taille annoncée dans l'interface est la vraie.
 
 #### Les trois usages
 
@@ -695,11 +724,19 @@ exacts, pas des morceaux jouables.
 curl -LO https://github.com/chrisdonahue/sheetsage-data/raw/refs/heads/main/hooktheory/Hooktheory.json.gz
 sha256sum Hooktheory.json.gz   # 917b7cd5…98e0c, empreinte publiée par l'auteur
 gunzip Hooktheory.json.gz
+
+git clone --depth 1 --filter=blob:none --no-checkout https://github.com/smashub/choco.git
+cd choco && git sparse-checkout set \
+  partitions/billboard/choco/jams partitions/isophonics/choco/jams \
+  partitions/robbie-williams/choco/jams partitions/wikifonia/choco/jams && git checkout && cd ..
+
 node --max-old-space-size=6144 scripts/build-progressions.mjs \
-     Hooktheory.json src/content/progressions/donnees.ts
+     --hooktheory=Hooktheory.json --choco=choco/partitions \
+     --sortie=src/content/progressions/donnees.ts
 ```
 
-Le fichier source de 309 Mo n'est pas versionné : seul le produit fini l'est.
+Ni le fichier de 309 Mo ni le clone de ChoCo ne sont versionnés : seul le
+produit fini l'est.
 
 ### Analyse de placement rythmique — faite
 

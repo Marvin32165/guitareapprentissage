@@ -115,7 +115,7 @@ export function RechercheAccords() {
               </p>
               <p className="text-neutral-500">
                 Ça ne veut pas dire que l&apos;enchaînement est faux : le corpus ne relève que des
-                suites de quatre accords, sur 10 451 morceaux annotés par des contributeurs.
+                suites de quatre accords, sur 18 599 morceaux annotés par des contributeurs.
               </p>
             </div>
           ) : (

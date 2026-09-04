@@ -9,7 +9,7 @@ import type { MorceauCorpus, ProgressionCorpus } from "@/content/progressions/re
 
 // Depuis le répertoire : « ce morceau que je travaille, il enchaîne quoi ? »
 //
-// La recherche se fait sur le titre, dans un corpus de 10 451 morceaux. Quand
+// La recherche se fait sur le titre, dans un corpus de 18 599 morceaux. Quand
 // rien ne sort, on le dit sans détour : le corpus est petit devant la musique,
 // et un morceau absent n'est pas un morceau sans progression.
 
@@ -63,7 +63,7 @@ export function ProgressionDuMorceau({ titre, artiste }: { titre: string; artist
           « {titre} » n&apos;est pas dans le corpus.
         </p>
         <p className="text-neutral-500">
-          Ça n&apos;a rien d&apos;anormal : 10 451 morceaux annotés, c&apos;est peu. Tu peux
+          Ça n&apos;a rien d&apos;anormal : 18 599 morceaux annotés, c&apos;est peu. Tu peux
           quand même taper ses accords dans{" "}
           <Link href="/enchainements" className="text-emerald-400 underline underline-offset-2">
             Enchaînements

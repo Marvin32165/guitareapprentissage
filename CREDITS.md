@@ -15,38 +15,72 @@ par cette licence. Rien n'est ajouté à `public/audio/` ni à
 
 ## Ce que c'est
 
-`src/content/progressions/donnees.ts` : 10 451 morceaux, ramenés chacun à des
+`src/content/progressions/donnees.ts` : **18 599 morceaux**, ramenés chacun à des
 **progressions en degrés** (I, V, vi, IV…). Ni mélodie, ni tablature, ni accords
 réels d'un morceau : uniquement des relations entre hauteurs, plus un titre et
-un nom d'artiste.
+un nom.
+
+Deux jeux de données publics, réunis par `scripts/build-progressions.mjs` :
+
+| Source | Morceaux retenus | Licence | Ce que c'est |
+| --- | ---: | --- | --- |
+| **Hooktheory / TheoryTab** | 12 776 | CC BY-NC-SA 3.0 | Annotations de contributeurs — pop, rock, jeu vidéo, animation |
+| **ChoCo — Billboard** | 785 | CC BY 4.0 | Succès du Billboard Hot 100, avec interprète |
+| **ChoCo — Isophonics** | 169 | CC BY 4.0 | Beatles, Queen, Carole King, Zweieck |
+| **ChoCo — Robbie Williams** | 16 | CC BY 4.0 | Un album annoté |
+| **ChoCo — Wikifonia** | 5 569 | CC BY 4.0 | Grilles de chansons, créditées au **compositeur** |
+| *doublons entre sources* | −716 | | Un morceau annoté deux fois ne compte qu'une |
+
+### Hooktheory / Sheet Sage
 
 - **Source** : [Hooktheory dataset](https://github.com/chrisdonahue/sheetsage#hooktheory-dataset),
   publié par **Chris Donahue** avec le système *Sheet Sage*, à partir des
-  annotations de la [TheoryTab DB de Hooktheory](https://www.hooktheory.com/theorytab)
+  annotations de la [TheoryTab DB](https://www.hooktheory.com/theorytab)
 - **Fichier récupéré** : `Hooktheory.json.gz`, 20 075 896 octets,
   SHA-256 `917b7cd58f5f4e07d6c36acf7bfad958c99ee05472dab3555399141094698e0c`
   — **identique à l'empreinte publiée** dans le README de Sheet Sage
 - **Publication** : Donahue, Thickstun, Liang, *Melody transcription via
   generative pre-training*, ISMIR 2022 ([arXiv:2212.01884](https://arxiv.org/abs/2212.01884))
 
-Rien n'a été moissonné : le jeu de données est distribué en un fichier, par son
-auteur, avec son empreinte.
+### ChoCo
 
-## Licence : CC BY-NC-SA 3.0 — et ce que ça implique vraiment
+- **Source** : [ChoCo, the Chord Corpus](https://github.com/smashub/choco)
+  (projet Polifonia) — de Berardinis, Poltronieri, Meroño-Peñuela, Presutti
+- **Récupération** : clone du dépôt, partitions `billboard`, `isophonics`,
+  `robbie-williams` et `wikifonia`
 
-Le fichier `LICENSE` de Sheet Sage est explicite :
+Rien n'a été moissonné : les deux jeux sont distribués par leurs auteurs.
+
+## Licences : deux régimes, et c'est le plus strict qui gagne
+
+**ChoCo — CC BY 4.0.** Son `LICENSE.md` dit :
+
+> ChoCo follows a dual licence scheme to comply with the data sharing strategies
+> of the original collections. Data and code are released under the Attribution
+> 4.0 International (CC BY 4.0), with the exception of data derived from
+> *Chordify Annotator Subjectivity Dataset*, *Mozart Piano Sonata*, and
+> *Jazz Audio-Aligned Harmony* data. The latter are released under the
+> Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+
+**Les trois exceptions ne sont pas reprises ici** : seules les partitions en
+CC BY 4.0 sont lues. Attribution seule, ni clause non commerciale, ni partage à
+l'identique.
+
+**Hooktheory — CC BY-NC-SA 3.0.** Le fichier `LICENSE` de Sheet Sage est
+explicite :
 
 > IMPORTANT NOTE: All \*code\* in this repository is MIT-licensed, but dataset
 > and trained models are distributed under CC BY-NC-SA 3.0, as they are derived
 > from user contributions on HookTheory (https://forum.hooktheory.com/tos).
 
-Donc : **réutilisation autorisée**, sous trois conditions.
+Les deux sont donc réutilisables, mais le fichier produit **mélange** les deux :
+c'est la licence la plus contraignante qui s'applique à l'ensemble.
 
 | Clause | Ce qu'elle impose ici |
 | --- | --- |
-| **BY** (attribution) | Créditer Chris Donahue et Hooktheory. Fait dans ce fichier, en tête du fichier généré, et dans l'interface. |
-| **NC** (pas d'usage commercial) | Cette app ne peut pas être vendue, ni monétisée, ni intégrée à une offre payante tant que ces données y sont. |
-| **SA** (partage à l'identique) | Toute **adaptation** des données se rediffuse sous la même licence. `src/content/progressions/donnees.ts` est une adaptation : il est sous CC BY-NC-SA 3.0. |
+| **BY** (attribution) | Créditer Chris Donahue, Hooktheory, et l'équipe ChoCo. Fait dans ce fichier, en tête du fichier généré, et dans l'interface. |
+| **NC** (pas d'usage commercial) | Cette app ne peut pas être vendue, ni monétisée, ni intégrée à une offre payante tant que les données Hooktheory y sont. |
+| **SA** (partage à l'identique) | `src/content/progressions/donnees.ts` est une adaptation : il est sous CC BY-NC-SA. |
 
 ### Le point qui mérite d'être dit franchement
 
@@ -61,23 +95,21 @@ Ce n'est pas la même situation, pour deux raisons :
    par **un seul script** (`scripts/build-progressions.mjs`). Le reste du dépôt
    ne dérive pas des données : il les lit.
 2. **Réversibilité.** Supprimer `src/content/progressions/` et le script suffit
-   à faire disparaître la contrainte : c'est un commit, pas une refonte.
+   à faire disparaître la contrainte : c'est un commit, pas une refonte. Et si
+   la clause NC devenait gênante, retirer la **seule** source Hooktheory du
+   script suffirait à retomber en CC BY 4.0 pur — au prix de 12 776 morceaux.
 
 Ce qu'on ne peut pas affirmer : qu'un juriste tracerait la frontière exactement
 là. La question « où s'arrête l'adaptation et où commence la simple
 agrégation » n'a pas de réponse tranchée, et je ne suis pas juriste. La lecture
 sûre, celle qui est retenue ici : **ne jamais commercialiser cette app tant que
-ces données y sont, et garder l'attribution partout où les progressions sont
-affichées.**
-
-Comme cette app est personnelle, mono-utilisateur, sans compte et sans offre
-payante, la clause NC ne coûte rien aujourd'hui. Elle coûterait le jour où
-l'app changerait de nature — c'est ce jour-là qu'il faudra revenir ici.
+les données Hooktheory y sont, et garder l'attribution partout où les
+progressions sont affichées.**
 
 ## Ce qui a été écarté, et pourquoi
 
-Deux autres dépôts sont souvent cités pour « les 5000 progressions ». Aucun
-n'est utilisable :
+Deux dépôts sont souvent cités pour « les 5000 progressions ». Aucun n'est
+utilisable :
 
 - [`DataStrategist/Musical-chord-progressions`](https://github.com/DataStrategist/Musical-chord-progressions)
   — celui du billet « Chord progressions of 5000 songs ». Son `LICENSE.txt` dit
@@ -89,16 +121,36 @@ n'est utilisable :
   interrogeant `hooktheory.com/songs/getXmlByPk?pk=…` : c'est un moissonnage.
   Écarté deux fois : pas de licence, et contraire à la règle du projet.
 
+Et parmi les partitions de ChoCo, sept sont laissées de côté :
+
+| Partition | Pourquoi |
+| --- | --- |
+| Chordify, Mozart Piano Sonata, JAAH | CC BY-NC-SA 4.0 — licence plus contraignante que le reste de ChoCo |
+| RWC-Pop, Uspop2002 | Aucune annotation de tonalité : aucun degré calculable sans la deviner |
+| Rock Corpus, When in Rome | Déjà en chiffres romains, dans une autre convention (`V6/5`, `I64`) qu'il faudrait retraduire |
+| Weimar Jazz Database | Convention où `-` veut dire *mineur*, l'inverse de music21 : un lecteur de plus pour 456 solos |
+| Nottingham, Jazz Corpus | Airs traditionnels sans auteur, morceaux sans titre |
+| The Real Book | 2 818 grilles **sans aucun nom**, et des titres qui n'en sont pas (« NOTES », « BALLADI ») |
+| Band-in-a-Box Internet Corpus | 4 989 fichiers d'origine incertaine, sans nom d'artiste |
+
+Les deux dernières lignes sont la même décision : **du volume sans identité**.
+Un corpus qui sert à reconnaître des morceaux connus n'a rien à faire d'un
+morceau qu'on ne peut pas nommer.
+
 ## Poids
 
 | Élément | Octets |
-| --- | --- |
-| `donnees.ts` (source TypeScript) | 510 414 (498 ko) |
-| dont vocabulaire des degrés | 910 |
-| dont table des 7 631 progressions | 68 679 |
-| dont 10 451 morceaux (titre + artiste + progression) | 285 019 |
-| dont index progression → morceaux | 138 902 |
-| **transmis au navigateur (brotli)** | **≈ 205 ko** |
+| --- | ---: |
+| `donnees.ts` (source TypeScript) | 1 196 571 (1 169 ko) |
+| dont vocabulaire des degrés (158 degrés distincts) | 1 063 |
+| dont table des 22 614 progressions | 203 526 |
+| dont 18 599 morceaux (8 826 lignes source + artiste) | 563 529 |
+| dont index progression → morceaux | 398 710 |
+| **transmis au navigateur (brotli)** | **≈ 465 ko** |
+
+Le fichier a plus que doublé en passant de 10 451 à 18 599 morceaux : la moitié
+du poids est le nom des morceaux eux-mêmes, qui ne se compresse pas mieux que
+du texte.
 
 Ce fichier n'est **pas** dans le bundle de démarrage : il est chargé par
 `import()` dynamique quand une vue de progressions s'ouvre pour la première
@@ -111,11 +163,19 @@ Il est donc téléchargé une fois, et la recherche fonctionne ensuite hors-lign
 curl -LO https://github.com/chrisdonahue/sheetsage-data/raw/refs/heads/main/hooktheory/Hooktheory.json.gz
 sha256sum Hooktheory.json.gz   # doit donner 917b7cd5…98e0c
 gunzip Hooktheory.json.gz
+
+git clone --depth 1 --filter=blob:none --no-checkout https://github.com/smashub/choco.git
+cd choco && git sparse-checkout set \
+  partitions/billboard/choco/jams partitions/isophonics/choco/jams \
+  partitions/robbie-williams/choco/jams partitions/wikifonia/choco/jams && git checkout && cd ..
+
 node --max-old-space-size=6144 scripts/build-progressions.mjs \
-     Hooktheory.json src/content/progressions/donnees.ts
+     --hooktheory=Hooktheory.json --choco=choco/partitions \
+     --sortie=src/content/progressions/donnees.ts
 ```
 
-Le fichier de 309 Mo n'est **pas** versionné : seul le produit fini l'est.
+Ni le fichier de 309 Mo ni le clone de ChoCo ne sont versionnés : seul le
+produit fini l'est.
 
 ---
 

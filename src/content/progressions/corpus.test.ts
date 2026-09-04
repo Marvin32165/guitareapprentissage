@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as donnees from "./donnees";
-import { chargerCorpus, titrer, normaliser } from "./corpus";
+import { SOURCES, chargerCorpus, titrer, normaliser } from "./corpus";
 import {
   accordDuDegre,
   accordsDeLaProgression,
@@ -71,8 +71,28 @@ describe("données générées", () => {
 
   it("annonce un corpus de la taille attendue", async () => {
     const { morceaux, progressions } = await tailleCorpus();
-    expect(morceaux).toBe(10451);
-    expect(progressions).toBe(7631);
+    expect(morceaux).toBe(18599);
+    expect(progressions).toBe(22614);
+  });
+
+  it("les cinq sources sont toutes représentées, et chacune se décode", async () => {
+    const c = await chargerCorpus();
+    const vus = new Map<string, number>();
+    for (let id = 0; id < c.nbMorceaux; id++) {
+      const m = c.morceau(id);
+      vus.set(m.source, (vus.get(m.source) ?? 0) + 1);
+      expect(m.titre.length, `titre vide (${m.source})`).toBeGreaterThan(0);
+      // Seul Hooktheory publie une fiche : les autres ne doivent pas inventer
+      // un lien qui n'existe pas.
+      if (m.source === "H") expect(m.url).toMatch(/^https:\/\/www\.hooktheory\.com\//);
+      else expect(m.url).toBeNull();
+      expect(SOURCES[m.source].credit).toBe(m.credit);
+    }
+    expect([...vus.keys()].sort()).toEqual(["B", "H", "I", "R", "W"]);
+    // Wikifonia crédite le compositeur : l'app ne doit pas l'annoncer comme
+    // l'interprète.
+    expect(SOURCES.W.credit).toBe("compositeur");
+    expect(SOURCES.B.credit).toBe("interprète");
   });
 });
 
@@ -113,7 +133,7 @@ describe("des degrés vers les accords", () => {
     expect(accordDuDegre("major", "vii°", 0)!.anglo).toBe("B°");
   });
 
-  it("aller-retour sur tout le corpus, dans les douze tonalités", async () => {
+  it("aller-retour sur tout le corpus, dans les douze tonalités", { timeout: 120_000 }, async () => {
     // Le test le plus utile du lot : chaque progression du corpus est jouée en
     // accords réels, ces accords sont relus comme si je les avais tapés, puis
     // rechiffrés. Si le générateur, l'orthographe des notes ou le lecteur
@@ -144,7 +164,9 @@ describe("d'une progression vers les morceaux", () => {
     expect(r!.progression.total).toBeGreaterThan(300);
     expect(r!.morceaux.length).toBe(donnees.PLAFOND_MORCEAUX);
     expect(r!.tronque).toBe(true);
-    expect(r!.morceaux[0].url).toMatch(/^https:\/\/www\.hooktheory\.com\/theorytab\/view\//);
+    for (const m of r!.morceaux) {
+      if (m.url !== null) expect(m.url).toMatch(/^https:\/\/www\.hooktheory\.com\/theorytab\/view\//);
+    }
   });
 
   it("rend null pour une progression que le corpus ne connaît pas", async () => {

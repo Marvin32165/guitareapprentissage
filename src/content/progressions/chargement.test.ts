@@ -64,3 +64,23 @@ describe("chargement du corpus", () => {
     expect(sw).toContain('url.pathname.startsWith("/_next/")');
   });
 });
+
+describe("les chiffres affichés", () => {
+  it("la taille du corpus annoncée dans l'interface est la vraie", async () => {
+    // Trois composants annoncent « N morceaux » en texte. Le jour où le corpus
+    // change, ce test tombe avant que l'app ne mente à l'utilisateur.
+    const { chargerCorpus } = await import("./corpus");
+    const attendu = (await chargerCorpus()).nbMorceaux;
+    const trouves: string[] = [];
+    for (const f of fichiers("src/components/progressions")) {
+      const source = readFileSync(f, "utf8");
+      for (const m of source.matchAll(/(\d{1,3}(?:[  ]\d{3})+) morceaux/g)) {
+        trouves.push(`${f} : ${m[1]}`);
+        expect(Number(m[1].replace(/[^0-9]/g, "")), `${f} annonce ${m[1]}`).toBe(attendu);
+      }
+    }
+    expect(trouves.length, "aucun chiffre trouvé : le motif du test a dû changer").toBeGreaterThan(
+      2,
+    );
+  });
+});

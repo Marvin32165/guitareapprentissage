@@ -25,15 +25,45 @@ export interface ProgressionCorpus {
   total: number;
 }
 
+/** Code d'une source, tel qu'il est écrit en tête de ligne dans MORCEAUX. */
+export type CodeSource = "H" | "B" | "I" | "R" | "W";
+
+export interface DescriptionSource {
+  nom: string;
+  /** Ce que désigne le nom : celui qui joue, ou celui qui a écrit. */
+  credit: "interprète" | "compositeur";
+  /**
+   * Vrai si les noms sont des identifiants d'URL à rendre lisibles. Seul
+   * Hooktheory est dans ce cas, et lui seul a une fiche à montrer.
+   */
+  identifiants: boolean;
+}
+
+/**
+ * Les cinq jeux d'annotations réunis ici. Le crédit n'est pas décoratif :
+ * Wikifonia nomme le COMPOSITEUR, pas l'interprète — « Lonesome Town » y est
+ * signé Baker Knight et non Ricky Nelson. Afficher les deux de la même façon
+ * serait faux.
+ */
+export const SOURCES: Record<CodeSource, DescriptionSource> = {
+  H: { nom: "Hooktheory / TheoryTab", credit: "interprète", identifiants: true },
+  B: { nom: "Billboard (ChoCo)", credit: "interprète", identifiants: false },
+  I: { nom: "Isophonics (ChoCo)", credit: "interprète", identifiants: false },
+  R: { nom: "Robbie Williams (ChoCo)", credit: "interprète", identifiants: false },
+  W: { nom: "Wikifonia (ChoCo)", credit: "compositeur", identifiants: false },
+};
+
 export interface MorceauCorpus {
   id: number;
-  /** Titre affichable, reconstruit depuis l'identifiant Hooktheory. */
   titre: string;
   artiste: string;
+  source: CodeSource;
+  /** Ce que le nom désigne, selon la source. */
+  credit: "interprète" | "compositeur";
   /** Progression « signature » : la plus répandue parmi celles du morceau. */
   progression: number;
-  /** Fiche d'origine, pour vérifier l'analyse à la source. */
-  url: string;
+  /** Fiche d'origine quand la source en publie une, sinon null. */
+  url: string | null;
 }
 
 interface Corpus {
@@ -91,17 +121,21 @@ function decoder(d: Donnees): Corpus {
     morceauxParProgression.push(ids);
   }
 
-  // Morceaux : une ligne par artiste, « artiste \t titre|progression \t … ».
+  // Morceaux : une ligne par (source, artiste), le code de source collé devant
+  // le nom : « Bchicago \t 25 or 6 to 4|prog \t … ».
   const artistes: string[] = [];
   const titres: string[] = [];
+  const codes: CodeSource[] = [];
   const progs: number[] = [];
   for (const ligne of d.MORCEAUX.split("\n")) {
     const champs = ligne.split("\t");
-    const artiste = champs[0];
+    const code = champs[0][0] as CodeSource;
+    const artiste = champs[0].slice(1);
     for (let k = 1; k < champs.length; k++) {
       const coupe = champs[k].lastIndexOf("|");
       artistes.push(artiste);
       titres.push(champs[k].slice(0, coupe));
+      codes.push(code);
       progs.push(parseInt(champs[k].slice(coupe + 1), 36));
     }
   }
@@ -113,12 +147,19 @@ function decoder(d: Donnees): Corpus {
     parCle,
     plafond: d.PLAFOND_MORCEAUX,
     morceau(id) {
+      const code = codes[id];
+      const source = SOURCES[code];
       return {
         id,
-        titre: titrer(titres[id]),
-        artiste: titrer(artistes[id]),
+        titre: source.identifiants ? titrer(titres[id]) : titres[id],
+        artiste: source.identifiants ? titrer(artistes[id]) : artistes[id],
+        source: code,
+        credit: source.credit,
         progression: progs[id],
-        url: `https://www.hooktheory.com/theorytab/view/${artistes[id]}/${titres[id]}`,
+        url:
+          code === "H"
+            ? `https://www.hooktheory.com/theorytab/view/${artistes[id]}/${titres[id]}`
+            : null,
       };
     },
   };

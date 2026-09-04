@@ -289,37 +289,60 @@ la section suivante.
 
 ### Corpus de progressions ✅
 
-**D'où ça vient.** Le jeu de données public publié avec *Sheet Sage* (Chris
-Donahue), tiré des annotations TheoryTab de Hooktheory. Fichier téléchargé chez
-l'auteur, **empreinte SHA-256 vérifiée contre celle qu'il publie**. Rien n'a été
+**D'où ça vient — deux jeux de données publics, 18 599 morceaux.**
+
+| Source | Morceaux | Licence |
+| --- | ---: | --- |
+| Hooktheory / TheoryTab, publié avec *Sheet Sage* (Chris Donahue) | 12 776 | CC BY-NC-SA 3.0 |
+| ChoCo (Polifonia) — Billboard | 785 | CC BY 4.0 |
+| ChoCo — Isophonics (Beatles, Queen, Carole King) | 169 | CC BY 4.0 |
+| ChoCo — Robbie Williams | 16 | CC BY 4.0 |
+| ChoCo — Wikifonia (crédité au **compositeur**) | 5 569 | CC BY 4.0 |
+
+Le fichier Hooktheory est téléchargé chez l'auteur, **empreinte SHA-256 vérifiée
+contre celle qu'il publie** ; ChoCo est cloné depuis son dépôt. Rien n'a été
 moissonné.
 
-**Licence : CC BY-NC-SA 3.0 — le point à ne pas noyer.** Elle autorise la
-réutilisation, donc rien ne bloquait. Mais la clause de **partage à l'identique**
-est exactement celle qui avait fait écarter MusyngKite côté audio, et la clause
-**non commerciale** signifie que **cette app ne peut pas être vendue ni monétisée
-tant que ces données y sont**. La contrainte tient dans **un seul fichier
-généré** ; la retirer est un commit. Le détail, y compris ce qu'on ne peut pas
-affirmer sans juriste, est dans `CREDITS.md`. Les deux autres dépôts souvent
-cités pour « les 5 000 progressions » sont écartés : licence des données
-*inconnue* pour l'un, aucune licence et moissonnage pour l'autre.
+**Licences : c'est la plus stricte qui gagne.** ChoCo est en CC BY 4.0
+— attribution seule, ni clause non commerciale ni partage à l'identique — sauf
+trois sous-collections en CC BY-NC-SA 4.0 qui ne sont pas reprises. Hooktheory
+est en CC BY-NC-SA 3.0. Comme le fichier produit mélange les deux, **l'ensemble
+est en CC BY-NC-SA** : **cette app ne peut pas être vendue ni monétisée tant que
+les données Hooktheory y sont**, et la clause de partage à l'identique est
+exactement celle qui avait fait écarter MusyngKite côté audio. La contrainte
+tient dans **un seul fichier généré** ; retirer la seule source Hooktheory
+ferait retomber l'ensemble en CC BY 4.0, au prix de 12 776 morceaux. Le détail,
+y compris ce qu'on ne peut pas affirmer sans juriste, est dans `CREDITS.md`.
+
+**Ce qui est écarté est aussi une décision.** Deux dépôts souvent cités pour
+« les 5 000 progressions » : licence des données *inconnue* pour l'un, aucune
+licence et moissonnage pour l'autre. Et sept partitions de ChoCo : licence plus
+stricte, absence d'annotation de tonalité, notation romaine à retraduire, ou
+**volume sans identité** — The Real Book (2 818 grilles) et Band-in-a-Box
+(4 989 fichiers) n'ont aucun nom d'auteur, et des titres qui n'en sont pas
+(« NOTES », « BALLADI »). Un corpus qui sert à reconnaître des morceaux connus
+n'a rien à faire d'un morceau qu'on ne peut pas nommer.
 
 **Ce qui est extrait : des degrés, rien d'autre.** Pas la mélodie, pas les
 accords réels d'un morceau, pas de tablature. Un morceau n'est retenu que s'il
-tient dans une seule tonalité — sinon les degrés seraient faux sur une partie du
-morceau. 10 451 morceaux, 7 631 progressions de quatre accords.
+tient dans une seule tonalité (les modes sont écartés) ; un accord illisible
+coupe la suite en deux plutôt que d'être sauté ; un accord enrichi est ramené à
+son noyau, triade plus septième. 22 614 progressions de quatre accords.
 
 **Le chiffrage est celui du moteur d'harmonie de l'app**, sinon le corpus et les
-leçons parleraient deux langues. Prouvé de bout en bout : les 7 631 progressions
-sont jouées en accords réels dans les 12 tonalités, ces accords sont relus comme
-s'ils étaient tapés à la main, puis rechiffrés — **91 572 aller-retours, zéro
-écart**.
+leçons parleraient deux langues. Prouvé de bout en bout : les 22 614
+progressions sont jouées en accords réels dans les 12 tonalités, ces accords
+sont relus comme s'ils étaient tapés à la main, puis rechiffrés —
+**271 368 aller-retours, zéro écart**.
 
-**Poids : 498 ko de source, ≈ 205 ko transmis (brotli).** Hors du bundle de
+**Poids : 1 169 ko de source, ≈ 465 ko transmis (brotli).** Il a plus que doublé
+en passant de 10 451 à 18 599 morceaux : la moitié du poids est le nom des
+morceaux, qui ne se compresse pas mieux que du texte. Hors du bundle de
 démarrage (`import()` dynamique, morceau de code séparé, vérifié sur le build),
 puis gardé par le service worker. Vérifié en production avec le réseau coupé :
 la recherche complète répond. Un test empêche la régression qui le ramènerait
-dans le bundle de démarrage.
+dans le bundle de démarrage, un autre vérifie que la taille annoncée dans
+l'interface est la vraie.
 
 **Trois usages.** Depuis une leçon, « qui joue ça ? » (leçons 5, 8, 11). Depuis
 le répertoire, « chercher sa progression » sur un morceau saisi à la main, avec
@@ -360,9 +383,14 @@ progressions en degrés, pas les accords exacts, pas des morceaux jouables**.
   peut pas être commercialisée, et le fichier généré se rediffuse sous la même
   licence. Contenu à un fichier, réversible en un commit — mais c'est une
   contrainte réelle, pas un détail.
-- **Le corpus est petit devant la musique.** 10 451 morceaux annotés par des
-  contributeurs, surtout de la pop anglophone. Un morceau absent n'est pas un
-  morceau sans progression, et l'analyse d'un contributeur n'est pas une vérité.
+- **Le corpus est petit devant la musique.** 18 599 morceaux annotés par des
+  contributeurs, surtout de la pop anglophone et des grilles de variété. Un
+  morceau absent n'est pas un morceau sans progression, et l'analyse d'un
+  contributeur n'est pas une vérité — sur quelques morceaux du jeu Billboard,
+  titre et interprète sont même intervertis à la source.
+- **Wikifonia crédite le compositeur, pas l'interprète.** « Lonesome Town » y
+  est signé Baker Knight et non Ricky Nelson. L'interface le dit ; elle
+  mentirait en les affichant de la même façon.
 - **Les titres viennent d'identifiants d'URL** : la ponctuation a été perdue à
   la source. « When You're Gone » y est écrit « When Youre Gone ». Elle n'est
   pas réinventée — la recherche, elle, ignore la ponctuation.

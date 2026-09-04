@@ -17,7 +17,8 @@ export function NoteCorpus({ court = false }: { court?: boolean }) {
           Deux morceaux qui partagent une progression ne se ressemblent pas
           forcément : le tempo, le rythme, les renversements, l&apos;instrumentation
           font le reste. Et l&apos;analyse est celle d&apos;un contributeur, pas une
-          vérité.
+          vérité — sur quelques morceaux, le titre et l&apos;artiste sont même
+          intervertis à la source.
         </p>
       )}
     </div>
@@ -28,19 +29,31 @@ export function SourceCorpus() {
   return (
     <div className="space-y-0.5 text-xs text-neutral-600">
       <p>
-        Corpus TheoryTab (Hooktheory), publié par Chris Donahue avec Sheet Sage. Embarqué
-        dans l&apos;app : consultable hors-ligne.
+        18 599 morceaux, réunis de deux jeux d&apos;annotations publics : TheoryTab
+        (Hooktheory), publié par Chris Donahue avec Sheet Sage, et ChoCo (Polifonia) —
+        partitions Billboard, Isophonics, Robbie Williams et Wikifonia. Embarqués dans
+        l&apos;app : consultables hors-ligne.
       </p>
-      {/* Le lien est sur sa propre ligne : dans le fil du texte, il ferait une
-          cible tactile de 16 px. */}
-      <a
-        href="https://creativecommons.org/licenses/by-nc-sa/3.0/deed.fr"
-        target="_blank"
-        rel="noreferrer noopener"
-        className="inline-flex min-h-11 items-center underline decoration-neutral-700 underline-offset-2 hover:text-neutral-400"
-      >
-        Licence CC BY-NC-SA 3.0
-      </a>
+      {/* Les liens sont sur leur propre ligne : dans le fil du texte, ils
+          feraient des cibles tactiles de 16 px. */}
+      <p className="flex flex-wrap gap-x-4">
+        <a
+          href="https://creativecommons.org/licenses/by-nc-sa/3.0/deed.fr"
+          target="_blank"
+          rel="noreferrer noopener"
+          className="inline-flex min-h-11 items-center underline decoration-neutral-700 underline-offset-2 hover:text-neutral-400"
+        >
+          Hooktheory : CC BY-NC-SA 3.0
+        </a>
+        <a
+          href="https://creativecommons.org/licenses/by/4.0/deed.fr"
+          target="_blank"
+          rel="noreferrer noopener"
+          className="inline-flex min-h-11 items-center underline decoration-neutral-700 underline-offset-2 hover:text-neutral-400"
+        >
+          ChoCo : CC BY 4.0
+        </a>
+      </p>
     </div>
   );
 }
