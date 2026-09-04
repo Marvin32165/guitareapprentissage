@@ -283,9 +283,55 @@ de son. Pas de note, pas de score ; les limites sont annoncées. Modèle
 `claude-sonnet-5` (le cahier des charges disait `claude-sonnet-4-6` : même
 famille, plus récent, plus capable, moins cher).
 
-**Hooktheory : non fait.** Son API est inaccessible depuis l'environnement de
-développement, comme Freesound. Rien n'a été écrit plutôt que du code jamais
-exécuté contre le vrai service.
+**Hooktheory : fait autrement.** L'API est abandonnée — pas de compte, pas
+d'identifiant dans Vercel, pas de jeton qui expire, et ça marche hors-ligne. Voir
+la section suivante.
+
+### Corpus de progressions ✅
+
+**D'où ça vient.** Le jeu de données public publié avec *Sheet Sage* (Chris
+Donahue), tiré des annotations TheoryTab de Hooktheory. Fichier téléchargé chez
+l'auteur, **empreinte SHA-256 vérifiée contre celle qu'il publie**. Rien n'a été
+moissonné.
+
+**Licence : CC BY-NC-SA 3.0 — le point à ne pas noyer.** Elle autorise la
+réutilisation, donc rien ne bloquait. Mais la clause de **partage à l'identique**
+est exactement celle qui avait fait écarter MusyngKite côté audio, et la clause
+**non commerciale** signifie que **cette app ne peut pas être vendue ni monétisée
+tant que ces données y sont**. La contrainte tient dans **un seul fichier
+généré** ; la retirer est un commit. Le détail, y compris ce qu'on ne peut pas
+affirmer sans juriste, est dans `CREDITS.md`. Les deux autres dépôts souvent
+cités pour « les 5 000 progressions » sont écartés : licence des données
+*inconnue* pour l'un, aucune licence et moissonnage pour l'autre.
+
+**Ce qui est extrait : des degrés, rien d'autre.** Pas la mélodie, pas les
+accords réels d'un morceau, pas de tablature. Un morceau n'est retenu que s'il
+tient dans une seule tonalité — sinon les degrés seraient faux sur une partie du
+morceau. 10 451 morceaux, 7 631 progressions de quatre accords.
+
+**Le chiffrage est celui du moteur d'harmonie de l'app**, sinon le corpus et les
+leçons parleraient deux langues. Prouvé de bout en bout : les 7 631 progressions
+sont jouées en accords réels dans les 12 tonalités, ces accords sont relus comme
+s'ils étaient tapés à la main, puis rechiffrés — **91 572 aller-retours, zéro
+écart**.
+
+**Poids : 498 ko de source, ≈ 205 ko transmis (brotli).** Hors du bundle de
+démarrage (`import()` dynamique, morceau de code séparé, vérifié sur le build),
+puis gardé par le service worker. Vérifié en production avec le réseau coupé :
+la recherche complète répond. Un test empêche la régression qui le ramènerait
+dans le bundle de démarrage.
+
+**Trois usages.** Depuis une leçon, « qui joue ça ? » (leçons 5, 8, 11). Depuis
+le répertoire, « chercher sa progression » sur un morceau saisi à la main, avec
+renvoi vers les leçons concernées. Et `/enchainements` : je tape mes accords,
+l'app les chiffre. **Aucune tonalité n'est demandée** — les douze toniques sont
+essayées dans les deux modes et toutes les lectures valables sont montrées :
+« C G Am F » est I – V – vi – IV en do majeur *et* III – VII – i – VI en la
+mineur, trancher serait une invention.
+
+Chaque progression s'entend (grille en boucle, tonalité au choix) et se pose sur
+le manche. Et l'interface répète partout ce que ces données sont : **des
+progressions en degrés, pas les accords exacts, pas des morceaux jouables**.
 
 ---
 
@@ -310,12 +356,21 @@ exécuté contre le vrai service.
 - **Le déploiement n'est pas vérifiable** depuis l'environnement de dev
   (`vercel.app` est bloqué par la même politique). Les vérifications se font en
   local, au navigateur, avant fusion.
+- **Le corpus de progressions impose CC BY-NC-SA.** Tant qu'il est là, l'app ne
+  peut pas être commercialisée, et le fichier généré se rediffuse sous la même
+  licence. Contenu à un fichier, réversible en un commit — mais c'est une
+  contrainte réelle, pas un détail.
+- **Le corpus est petit devant la musique.** 10 451 morceaux annotés par des
+  contributeurs, surtout de la pop anglophone. Un morceau absent n'est pas un
+  morceau sans progression, et l'analyse d'un contributeur n'est pas une vérité.
+- **Les titres viennent d'identifiants d'URL** : la ponctuation a été perdue à
+  la source. « When You're Gone » y est écrit « When Youre Gone ». Elle n'est
+  pas réinventée — la recherche, elle, ignore la ponctuation.
 
 ---
 
 ## 5. Ce qu'il reste
 
-- **Hooktheory**, si l'accès réseau le permet un jour.
 - **Couches de vélocité** pour le son : aucune source libre n'en propose pour
   une guitare acoustique. À documenter, pas à simuler.
 - **Bruit de glissé** (*slide noise*), optionnel.

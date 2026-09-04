@@ -102,12 +102,9 @@ turso db shell <nom-base> < prisma/migrations/<horodatage>_ma_migration/migratio
 - Déverrouillage audio (`src/components/audio`) : bouton « Activer le son »
   requis avant tout son (politique d'autoplay iOS / Web Audio).
 
-> **À implémenter en phase 7 — file d'écritures hors-ligne (outbox).**
-> Les réponses d'oreille et les révisions espacées écrivent dans le journal
-> append-only `PracticeEvent`. Hors-ligne, ces écritures devront être mises en
-> file dans une **outbox IndexedDB** côté client, puis rejouées vers le serveur
-> à la reconnexion (idéalement via Background Sync, avec repli sur un flush au
-> retour en ligne). Non codé pour l'instant.
+- File d'écritures hors-ligne (outbox IndexedDB) : **faite**, voir plus bas.
+- Corpus de progressions : embarqué dans le code, chargé à la demande puis gardé
+  par le service worker — voir plus bas.
 
 ## Déploiement (Vercel + Turso) — runbook
 
@@ -609,13 +606,100 @@ contre 3 $/15 $.
 Sans `ANTHROPIC_API_KEY`, la fonction est simplement indisponible et le dit ; les
 mesures restent affichées telles quelles.
 
-### Hooktheory — non réalisable depuis cet environnement
+### Corpus de progressions — fait, sans API
 
-`api.hooktheory.com` et `hooktheory.com` sont **inaccessibles** depuis
-l'environnement de développement (HTTP 000, même politique réseau qui bloque
-Freesound). Impossible d'inspecter l'API, de vérifier ses conditions
-d'utilisation ni de tester une intégration. Rien n'a donc été écrit : mieux vaut
-une fonctionnalité absente qu'un code jamais exécuté contre le vrai service.
+L'API Hooktheory a été abandonnée au profit du **jeu de données public** publié
+avec *Sheet Sage* : pas de compte, pas d'identifiant dans Vercel, pas de jeton
+qui expire, et ça fonctionne hors-ligne. (`api.hooktheory.com` est de toute
+façon inaccessible depuis cet environnement de développement — même politique
+réseau que celle qui bloque Freesound.)
+
+**Licence vérifiée avant intégration**, comme demandé : **CC BY-NC-SA 3.0**.
+Elle autorise la réutilisation, donc rien ne bloquait — mais la clause de
+partage à l'identique est exactement celle qui avait fait écarter MusyngKite
+côté audio. L'écart est assumé et expliqué en détail dans
+[`CREDITS.md`](CREDITS.md#corpus-de-progressions-daccords). Le point à retenir :
+**cette application ne peut pas être commercialisée tant que ces données y
+sont**, et la contrainte tient dans un seul fichier généré, supprimable en un
+commit. Les deux autres dépôts souvent cités pour « les 5 000 progressions »
+sont écartés : licence des données *inconnue* pour l'un, aucune licence et
+moissonnage pour l'autre.
+
+#### Ce qui est extrait — et ce qui ne l'est pas
+
+Des **degrés**. Uniquement. Pas la mélodie, pas les accords réels d'un morceau,
+pas de tablature. Un degré est une relation entre deux hauteurs : un fait de
+théorie. Le titre et l'artiste sont des faits également.
+
+Un morceau n'est retenu que s'il tient dans **une seule tonalité** : un
+changement de tonalité rendrait les degrés faux sur une partie du morceau, et
+une progression fausse enseignée comme vraie est pire que pas de progression.
+Un accord dont la qualité n'est pas reconnue écarte le morceau entier plutôt
+que de laisser un trou. 10 451 morceaux retenus sur 18 675, 7 631 progressions.
+
+Le chiffrage est celui du moteur d'harmonie de l'app
+(`src/lib/music/degres.ts`), sans quoi le corpus et les leçons parleraient deux
+langues. **Un test le prouve de bout en bout** : les 7 631 progressions sont
+jouées en accords réels dans les 12 tonalités, ces accords sont relus comme
+s'ils étaient tapés à la main, puis rechiffrés — 91 572 aller-retours, zéro
+écart.
+
+#### Poids, et comment il est contenu
+
+| Élément | Octets |
+| --- | --- |
+| `src/content/progressions/donnees.ts` | 510 414 (498 ko) |
+| dont vocabulaire des degrés (138 degrés distincts) | 910 |
+| dont table des 7 631 progressions | 68 679 |
+| dont 10 451 morceaux | 285 019 |
+| dont index progression → morceaux | 138 902 |
+| **transmis au navigateur (brotli)** | **≈ 205 ko** |
+
+Tout est encodé en chaînes compactes — indices base36, écarts successifs,
+regroupement par artiste — pour que le navigateur lise **quatre chaînes** au
+lieu de construire des dizaines de milliers d'objets.
+
+Le fichier n'est **pas** dans le bundle de démarrage : `import()` dynamique,
+donc son propre morceau de code, vérifié sur le build (aucun manifeste de page
+ne le référence). Une fois chargé, le service worker le garde comme n'importe
+quel `/_next/static`. **Vérifié sur le build de production** : service worker
+actif, réseau coupé, recherche complète qui répond.
+
+Un test empêche la régression qui le ramènerait dans le bundle de démarrage —
+il suffirait d'un `import` statique dans un composant.
+
+#### Les trois usages
+
+- **Depuis une leçon** (leçons 5, 8 et 11) : « qui joue ça ? ». Une suite de
+  moins de quatre accords (ii – V – I) n'est pas une progression du corpus mais
+  un fragment de plusieurs : on liste celles qui la contiennent, une seule
+  dépliée à la fois.
+- **Depuis le répertoire** : « chercher sa progression » sur un morceau saisi à
+  la main. Le corpus rend la progression signature en degrés et renvoie vers les
+  leçons concernées, avec la raison du renvoi. Quand le morceau n'y est pas,
+  c'est dit sans détour.
+- **Recherche inverse** (`/enchainements`) : je tape les accords que je joue.
+  **Aucune tonalité n'est demandée** — les douze toniques sont essayées dans les
+  deux modes, et toutes les lectures qui tombent sur une progression connue sont
+  montrées. « C G Am F » est I – V – vi – IV en do majeur **et**
+  III – VII – i – VI en la mineur : trancher à ma place serait une invention.
+
+Chaque progression **s'entend** (grille jouée en boucle, tonalité au choix) et
+**se pose sur le manche** (pentatonique de la tonalité). Et l'interface répète
+partout ce que ces données sont : des progressions en degrés, pas les accords
+exacts, pas des morceaux jouables.
+
+#### Reconstruire `donnees.ts`
+
+```sh
+curl -LO https://github.com/chrisdonahue/sheetsage-data/raw/refs/heads/main/hooktheory/Hooktheory.json.gz
+sha256sum Hooktheory.json.gz   # 917b7cd5…98e0c, empreinte publiée par l'auteur
+gunzip Hooktheory.json.gz
+node --max-old-space-size=6144 scripts/build-progressions.mjs \
+     Hooktheory.json src/content/progressions/donnees.ts
+```
+
+Le fichier source de 309 Mo n'est pas versionné : seul le produit fini l'est.
 
 ### Analyse de placement rythmique — faite
 
