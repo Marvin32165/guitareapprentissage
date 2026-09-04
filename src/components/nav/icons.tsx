@@ -40,6 +40,16 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M18 16v-6" />
     </>
   ),
+  // Une grille d'accord : le dessin que tout guitariste reconnaît.
+  chords: (
+    <>
+      <path d="M5 6h14" />
+      <path d="M5 6v13M9.67 6v13M14.33 6v13M19 6v13" />
+      <path d="M5 11h14M5 15.5h14" />
+      <circle cx="9.67" cy="8.5" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="14.33" cy="13" r="1.3" fill="currentColor" stroke="none" />
+    </>
+  ),
   list: (
     <>
       <path d="M8 6h13" />

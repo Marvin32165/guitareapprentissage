@@ -103,6 +103,12 @@ export const lesson: Lesson = {
       },
     },
     {
+      kind: "corpus",
+      mode: "minor",
+      degres: ["i", "VI", "III", "VII"],
+      legende: "Une progression mineure très répandue",
+    },
+    {
       kind: "exercise",
       exercise: {
         id: "l5-e4",

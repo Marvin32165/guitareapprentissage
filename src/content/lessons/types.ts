@@ -71,6 +71,13 @@ export type LessonBlock =
   | { kind: "fretboard"; caption?: string; spec: FretboardSpec }
   /** Formes d'accords ouverts, jouables au toucher. */
   | { kind: "chords"; caption?: string; shapeIds: string[] }
+  /**
+   * Les morceaux du corpus qui emploient une progression. Des DEGRÉS, pas des
+   * morceaux jouables : le composant le dit à chaque fois. De deux à quatre
+   * degrés — en dessous de quatre, on montre les progressions qui contiennent
+   * la suite.
+   */
+  | { kind: "corpus"; mode: "major" | "minor"; degres: string[]; legende?: string }
   | { kind: "exercise"; exercise: Exercise };
 
 export interface Lesson {

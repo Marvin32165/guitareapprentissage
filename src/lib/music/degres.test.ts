@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
   QUALITES_DEGRE,
+  accordDuDegre,
   decouperDegre,
+  hauteursDuDegre,
+  lireDegre,
   lireAccord,
   lireSuiteAccords,
   nomDegre,
@@ -144,6 +147,61 @@ describe("tonalités", () => {
     for (const mode of ["major", "minor"] as const) {
       for (let pc = 0; pc < 12; pc++) {
         expect(pitchClass(toniqueDe(pc, mode))).toBe(pc);
+      }
+    }
+  });
+});
+
+describe("lireDegre est l'exact inverse de nomDegre", () => {
+  it("retrouve rang, écart et qualité pour tous les degrés possibles", () => {
+    for (const mode of ["major", "minor"] as const) {
+      for (let d = 0; d < 12; d++) {
+        for (const q of QUALITES_DEGRE) {
+          const degre = nomDegre(mode, d, q);
+          const lu = lireDegre(mode, degre);
+          expect(lu, `illisible : ${degre} (${mode})`).not.toBeNull();
+          expect(lu!.demiTons, degre).toBe(d);
+          expect(lu!.qualite, degre).toBe(q);
+          expect(lu!.rang, degre).toBeGreaterThanOrEqual(1);
+          expect(lu!.rang, degre).toBeLessThanOrEqual(7);
+        }
+      }
+    }
+  });
+});
+
+describe("hauteursDuDegre", () => {
+  it("part bien de la hauteur du degré, dans toutes les tonalités", () => {
+    for (const mode of ["major", "minor"] as const) {
+      for (let tonique = 0; tonique < 12; tonique++) {
+        for (let d = 0; d < 12; d++) {
+          for (const q of QUALITES_DEGRE) {
+            const h = hauteursDuDegre(mode, nomDegre(mode, d, q), tonique)!;
+            expect(h[0]).toBe((tonique + d) % 12);
+          }
+        }
+      }
+    }
+  });
+
+  it("donne les bonnes notes : I majeur en do = Do Mi Sol, ii7 = Ré Fa La Do", () => {
+    expect(hauteursDuDegre("major", "I", 0)).toEqual([0, 4, 7]);
+    expect(hauteursDuDegre("major", "ii7", 0)).toEqual([2, 5, 9, 0]);
+    expect(hauteursDuDegre("major", "V7", 0)).toEqual([7, 11, 2, 5]);
+    expect(hauteursDuDegre("major", "viiø7", 0)).toEqual([11, 2, 5, 9]);
+  });
+
+  it("l'accord entendu est celui qui est écrit", () => {
+    // La fondamentale du symbole affiché et celle des hauteurs jouées ne
+    // peuvent pas diverger : ce serait le pire défaut possible ici.
+    for (const mode of ["major", "minor"] as const) {
+      for (let tonique = 0; tonique < 12; tonique++) {
+        for (let d = 0; d < 12; d++) {
+          const degre = nomDegre(mode, d, "maj");
+          const a = accordDuDegre(mode, degre, tonique);
+          if (!a) continue;
+          expect(pitchClass(a.note)).toBe(hauteursDuDegre(mode, degre, tonique)![0]);
+        }
       }
     }
   });

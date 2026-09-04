@@ -7,8 +7,10 @@ import {
   chercherMorceau,
   chercherParAccords,
   morceauxDeLaProgression,
+  progressionsContenant,
   tailleCorpus,
 } from "./recherche";
+import { LESSONS } from "@/content/lessons";
 import { QUALITES_DEGRE, lireAccord, nomDegre } from "@/lib/music/degres";
 
 describe("données générées", () => {
@@ -165,6 +167,28 @@ describe("d'un titre vers sa progression", () => {
 
   it("rend une liste vide plutôt qu'une invention", async () => {
     expect(await chercherMorceau("zzzz qqqq wwww")).toEqual([]);
+  });
+});
+
+describe("ce que les leçons citent", () => {
+  it("toute progression citée par une leçon existe vraiment dans le corpus", async () => {
+    // Sans ce test, une leçon peut afficher « aucune progression ne
+    // correspond » sans que rien ne casse : le pire des défauts, celui qui ne
+    // se voit qu'en lisant la leçon.
+    for (const lecon of LESSONS) {
+      for (const bloc of lecon.blocks) {
+        if (bloc.kind !== "corpus") continue;
+        const ou = `${lecon.slug} : ${bloc.degres.join("-")}`;
+        if (bloc.degres.length === 4) {
+          expect(await morceauxDeLaProgression(bloc.mode, bloc.degres), ou).not.toBeNull();
+        } else {
+          const r = await progressionsContenant(bloc.mode, bloc.degres);
+          expect(r.resultats.length, ou).toBeGreaterThan(0);
+        }
+        expect(bloc.degres.length, ou).toBeGreaterThanOrEqual(2);
+        expect(bloc.degres.length, ou).toBeLessThanOrEqual(4);
+      }
+    }
   });
 });
 

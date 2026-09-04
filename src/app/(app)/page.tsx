@@ -10,6 +10,8 @@ const pitch: Record<string, string> = {
   "/oreille": "Reconnaître intervalles, accords et degrés à l'oreille.",
   "/technique": "Métronome et exercices chronométrés.",
   "/progression": "Ta routine du jour, tes séries et tes statistiques.",
+  "/enchainements":
+    "Une suite d'accords ? L'app la chiffre en degrés et dit qui joue la même.",
   "/repertoire": "Tes morceaux, leur statut et tes notes.",
 };
 

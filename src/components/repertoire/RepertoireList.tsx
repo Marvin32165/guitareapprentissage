@@ -1,10 +1,16 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { ProgressionDuMorceau } from "@/components/progressions/ProgressionDuMorceau";
 
 // Répertoire : une liste de titres saisie à la main, avec des notes
 // personnelles. Rien n'est récupéré ailleurs, aucune tablature n'est engendrée
 // — c'est une règle du projet, pas une limite technique.
+//
+// Le corpus de progressions ne change rien à cette règle : il ne rend que des
+// DEGRÉS (I, V, vi, IV) et un renvoi vers les leçons. Ni accords du morceau,
+// ni mélodie, ni tablature. Et il n'est consulté que sur demande explicite,
+// morceau par morceau.
 
 export interface Song {
   id: string;
@@ -181,6 +187,9 @@ function Groupe({
   onToggle: (s: Song) => void;
   onDelete: (id: string) => void;
 }) {
+  // Un seul morceau déplié à la fois : le corpus ne se charge qu'une fois, mais
+  // quatre grilles jouables empilées sur un téléphone ne servent personne.
+  const [ouvert, setOuvert] = useState<string | null>(null);
   if (songs.length === 0) return null;
   return (
     <section className="space-y-2">
@@ -218,13 +227,28 @@ function Groupe({
             {s.notes && (
               <p className="mt-2 whitespace-pre-wrap text-sm text-neutral-400">{s.notes}</p>
             )}
-            <button
-              type="button"
-              onClick={() => onDelete(s.id)}
-              className="mt-2 inline-flex min-h-11 items-center text-xs text-neutral-600 underline underline-offset-4 hover:text-neutral-400"
-            >
-              Retirer
-            </button>
+            <div className="mt-2 flex flex-wrap items-center gap-4">
+              <button
+                type="button"
+                onClick={() => setOuvert((o) => (o === s.id ? null : s.id))}
+                aria-expanded={ouvert === s.id}
+                className="inline-flex min-h-11 items-center text-xs text-emerald-400 underline underline-offset-4 hover:text-emerald-300"
+              >
+                {ouvert === s.id ? "Masquer la progression" : "Chercher sa progression"}
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(s.id)}
+                className="inline-flex min-h-11 items-center text-xs text-neutral-600 underline underline-offset-4 hover:text-neutral-400"
+              >
+                Retirer
+              </button>
+            </div>
+            {ouvert === s.id && (
+              <div className="mt-3 border-t border-neutral-800 pt-3">
+                <ProgressionDuMorceau titre={s.title} artiste={s.artist} />
+              </div>
+            )}
           </li>
         ))}
       </ul>

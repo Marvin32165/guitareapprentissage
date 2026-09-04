@@ -4,6 +4,7 @@ export type IconName =
   | "ear"
   | "metronome"
   | "chart"
+  | "chords"
   | "list";
 
 export interface NavItem {
@@ -20,6 +21,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/oreille", label: "Oreille", icon: "ear", bottom: true },
   { href: "/technique", label: "Technique", icon: "metronome", bottom: true },
   { href: "/progression", label: "Progrès", icon: "chart", bottom: true },
+  { href: "/enchainements", label: "Enchaînements", icon: "chords", bottom: false },
   { href: "/repertoire", label: "Répertoire", icon: "list", bottom: false },
 ];
 

@@ -11,21 +11,13 @@ import {
   type Mode,
   type AccordLu,
   ROMAINS,
+  accordDuDegre,
+  accordsDesDegres,
   decouperDegre,
   lireSuiteAccords,
   nomDegre,
   nomTonalite,
-  toniqueDe,
 } from "@/lib/music/degres";
-import {
-  formatNote,
-  formatNoteLatin,
-  letterAt,
-  letterIndex,
-  naturalPitchClass,
-  note,
-  type Note,
-} from "@/lib/music/pitch";
 import {
   chargerCorpus,
   chercherMorceaux,
@@ -39,6 +31,7 @@ import {
 } from "./corpus";
 
 export type { MorceauCorpus, ProgressionCorpus, TrouvailleMorceau };
+export { accordDuDegre };
 
 /** Combien de morceaux le corpus contient, pour le dire honnêtement. */
 export async function tailleCorpus(): Promise<{ morceaux: number; progressions: number }> {
@@ -68,6 +61,37 @@ export async function morceauxDeLaProgression(
   if (!progression) return null;
   const morceaux = morceauxDe(c, progression.id);
   return { progression, morceaux, tronque: progression.total > morceaux.length };
+}
+
+/**
+ * Les progressions du corpus qui CONTIENNENT une suite plus courte. Le corpus
+ * n'indexe que des fenêtres de quatre accords : « ii V I » ne s'y trouve pas
+ * comme telle, mais dans « ii-V-I-IV », « I-ii-V-I »… Les montrer telles
+ * quelles est plus honnête que d'inventer un total.
+ */
+export async function progressionsContenant(
+  mode: Mode,
+  degres: string[],
+  max = 6,
+): Promise<{ resultats: ProgressionEtMorceaux[]; position: number[]; totalProgressions: number }> {
+  const c = await chargerCorpus();
+  const cibles: CibleDegre[] = degres.map((d) => decouperDegre(d));
+  const trouvees = progressionsCompatibles(c, cibles, 0, mode).sort(
+    (a, b) => b.progression.total - a.progression.total,
+  );
+  const gardees = trouvees.slice(0, max);
+  return {
+    totalProgressions: trouvees.length,
+    position: gardees.map((t) => t.position),
+    resultats: gardees.map((t) => {
+      const morceaux = morceauxDe(c, t.progression.id);
+      return {
+        progression: t.progression,
+        morceaux,
+        tronque: t.progression.total > morceaux.length,
+      };
+    }),
+  };
 }
 
 // ── 2. D'un titre vers sa progression ──
@@ -146,95 +170,16 @@ export async function chercherParAccords(saisi: string, max = 24): Promise<Reche
 
 // ── Des degrés vers des accords réels ──
 
-const CHIFFRES = ["I", "II", "III", "IV", "V", "VI", "VII"];
-
 /**
- * Du suffixe de degré vers le suffixe d'accord. La casse du chiffre romain
- * porte la moitié de l'information : « vii°7 » est diminué, « VII7 » est un
- * accord de septième de dominante. Un test vérifie que cette table couvre
- * exactement les qualités que nomDegre() sait produire.
+ * Confort : la même chose que accordsDesDegres(), à partir d'une progression
+ * du corpus. Le calcul lui-même est de la théorie pure et vit dans
+ * src/lib/music/degres.ts, pour que l'affichage d'une grille n'oblige pas à
+ * charger le corpus.
  */
-export const SUFFIXE_ACCORD: Record<string, string> = {
-  "|majuscule": "",
-  "|minuscule": "m",
-  "°|minuscule": "°",
-  "+|majuscule": "+",
-  "7|majuscule": "7",
-  "7|minuscule": "m7",
-  "maj7|majuscule": "maj7",
-  "ø7|minuscule": "m7♭5",
-  "°7|minuscule": "°7",
-  "sus4|majuscule": "sus4",
-  "sus2|majuscule": "sus2",
-};
-
-/** « ♭VII7 » -> rang 7, 10 demi-tons, suffixe « 7 », majuscule. */
-function lireDegre(
-  mode: Mode,
-  degre: string,
-): { rang: number; demiTons: number; suffixe: string; casse: "majuscule" | "minuscule" } | null {
-  const m = /^([♭♯]?)([IViv]+)(.*)$/.exec(degre);
-  if (!m) return null;
-  const rang = CHIFFRES.indexOf(m[2].toUpperCase()) + 1;
-  if (rang === 0) return null;
-  const demiTons = ROMAINS[mode].indexOf(m[1] + m[2].toUpperCase());
-  if (demiTons < 0) return null;
-  return {
-    rang,
-    demiTons,
-    suffixe: m[3],
-    casse: m[2] === m[2].toUpperCase() ? "majuscule" : "minuscule",
-  };
-}
-
-function joli(texte: string): string {
-  return texte.replace(/#/g, "♯").replace(/b/g, "♭");
-}
-
-/**
- * L'accord réel d'un degré dans une tonalité. L'orthographe suit le chiffre :
- * le ♭III de do mineur s'écrit Mi♭, jamais Ré♯, parce que c'est un troisième
- * degré — la lettre vient du rang, l'altération de la hauteur.
- */
-export function accordDuDegre(
-  mode: Mode,
-  degre: string,
-  toniquePc: number,
-): { note: Note; anglo: string; latin: string } | null {
-  const lu = lireDegre(mode, degre);
-  if (!lu) return null;
-  const suffixe = SUFFIXE_ACCORD[`${lu.suffixe}|${lu.casse}`];
-  if (suffixe === undefined) return null;
-
-  const tonique = toniqueDe(toniquePc, mode);
-  const lettre = letterAt(letterIndex(tonique.letter) + lu.rang - 1);
-  const vise = (((toniquePc + lu.demiTons) % 12) + 12) % 12;
-  let alteration = vise - naturalPitchClass(lettre);
-  if (alteration > 6) alteration -= 12;
-  if (alteration < -6) alteration += 12;
-  // Au-delà du double dièse, l'orthographe correcte n'existe plus vraiment :
-  // mieux vaut ne rien afficher que d'écrire un Fa### .
-  if (Math.abs(alteration) > 2) return null;
-  const fondamentale = note(lettre, alteration);
-
-  return {
-    note: fondamentale,
-    anglo: joli(formatNote(fondamentale)) + suffixe,
-    latin: joli(formatNoteLatin(fondamentale)) + suffixe,
-  };
-}
-
-/** La progression jouée dans une tonalité : ["C", "G", "Am", "F"]. */
 export function accordsDeLaProgression(
   progression: ProgressionCorpus,
   toniquePc: number,
   systeme: "anglo" | "latin" = "anglo",
 ): string[] | null {
-  const out: string[] = [];
-  for (const degre of progression.degres) {
-    const a = accordDuDegre(progression.mode, degre, toniquePc);
-    if (!a) return null;
-    out.push(systeme === "latin" ? a.latin : a.anglo);
-  }
-  return out;
+  return accordsDesDegres(progression.mode, progression.degres, toniquePc, systeme);
 }

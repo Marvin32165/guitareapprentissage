@@ -7,7 +7,16 @@
 // un test vérifie que tous les degrés du corpus sont reproductibles par ces
 // fonctions, sinon l'index et l'app se mettraient à parler deux langues.
 
-import { type Note, formatNote, formatNoteLatin, note, type Letter } from "./pitch";
+import {
+  type Letter,
+  type Note,
+  formatNote,
+  formatNoteLatin,
+  letterAt,
+  letterIndex,
+  naturalPitchClass,
+  note,
+} from "./pitch";
 
 export type Mode = "major" | "minor";
 
@@ -212,4 +221,138 @@ export function toniqueDe(classeDeHauteur: number, mode: Mode): Note {
 export function nomTonalite(classeDeHauteur: number, mode: Mode): string {
   const t = toniqueDe(classeDeHauteur, mode);
   return `${formatNoteLatin(t)} ${mode === "major" ? "majeur" : "mineur"} (${formatNote(t)})`;
+}
+
+// ── Du degré vers l'accord réel ──
+
+const CHIFFRES = ["I", "II", "III", "IV", "V", "VI", "VII"];
+
+/** Demi-tons empilés sur la fondamentale, pour chaque qualité. */
+const INTERVALLES: Record<QualiteDegre, number[]> = {
+  maj: [0, 4, 7],
+  min: [0, 3, 7],
+  dim: [0, 3, 6],
+  aug: [0, 4, 8],
+  dom7: [0, 4, 7, 10],
+  maj7: [0, 4, 7, 11],
+  min7: [0, 3, 7, 10],
+  demiDim7: [0, 3, 6, 10],
+  dim7: [0, 3, 6, 9],
+  sus4: [0, 5, 7],
+  sus2: [0, 2, 7],
+};
+
+/**
+ * Suffixe du chiffrage romain (et casse) vers la qualité d'accord et le
+ * suffixe qu'on écrit sur une grille. La casse porte la moitié de
+ * l'information : « vii°7 » est diminué, « VII7 » est une septième de
+ * dominante. Un test vérifie que cette table est l'exact inverse de nomDegre().
+ */
+const DEPUIS_DEGRE: Record<string, { qualite: QualiteDegre; accord: string }> = {
+  "|majuscule": { qualite: "maj", accord: "" },
+  "|minuscule": { qualite: "min", accord: "m" },
+  "°|minuscule": { qualite: "dim", accord: "°" },
+  "+|majuscule": { qualite: "aug", accord: "+" },
+  "7|majuscule": { qualite: "dom7", accord: "7" },
+  "7|minuscule": { qualite: "min7", accord: "m7" },
+  "maj7|majuscule": { qualite: "maj7", accord: "maj7" },
+  "ø7|minuscule": { qualite: "demiDim7", accord: "m7♭5" },
+  "°7|minuscule": { qualite: "dim7", accord: "°7" },
+  "sus4|majuscule": { qualite: "sus4", accord: "sus4" },
+  "sus2|majuscule": { qualite: "sus2", accord: "sus2" },
+};
+
+export interface DegreLu {
+  /** Rang dans la gamme, 1..7 : c'est lui qui donne la LETTRE de l'accord. */
+  rang: number;
+  /** Écart en demi-tons depuis la tonique. */
+  demiTons: number;
+  qualite: QualiteDegre;
+  /** Suffixe d'accord : "", "m", "7", "m7♭5"… */
+  suffixe: string;
+}
+
+/** « ♭VII7 » → rang 7, 10 demi-tons, septième de dominante. */
+export function lireDegre(mode: Mode, degre: string): DegreLu | null {
+  const m = /^([♭♯]?)([IViv]+)(.*)$/.exec(degre);
+  if (!m) return null;
+  const rang = CHIFFRES.indexOf(m[2].toUpperCase()) + 1;
+  if (rang === 0) return null;
+  const demiTons = ROMAINS[mode].indexOf(m[1] + m[2].toUpperCase());
+  if (demiTons < 0) return null;
+  const casse = m[2] === m[2].toUpperCase() ? "majuscule" : "minuscule";
+  const trouve = DEPUIS_DEGRE[`${m[3]}|${casse}`];
+  if (!trouve) return null;
+  return { rang, demiTons, qualite: trouve.qualite, suffixe: trouve.accord };
+}
+
+function alterationPour(lettre: Letter, viseePc: number): number {
+  let a = viseePc - naturalPitchClass(lettre);
+  if (a > 6) a -= 12;
+  if (a < -6) a += 12;
+  return a;
+}
+
+function joli(texte: string): string {
+  return texte.replace(/#/g, "♯").replace(/b/g, "♭");
+}
+
+/**
+ * L'accord réel d'un degré dans une tonalité. L'orthographe suit le chiffre :
+ * le III de do mineur s'écrit Mi♭, jamais Ré♯, parce que c'est un TROISIÈME
+ * degré — la lettre vient du rang, l'altération de la hauteur.
+ */
+export function accordDuDegre(
+  mode: Mode,
+  degre: string,
+  toniquePc: number,
+): { note: Note; anglo: string; latin: string } | null {
+  const lu = lireDegre(mode, degre);
+  if (!lu) return null;
+
+  const tonique = toniqueDe(toniquePc, mode);
+  const lettre = letterAt(letterIndex(tonique.letter) + lu.rang - 1);
+  const alteration = alterationPour(lettre, (((toniquePc + lu.demiTons) % 12) + 12) % 12);
+  // Au-delà du double dièse l'orthographe n'a plus de sens : mieux vaut ne
+  // rien afficher qu'écrire un Fa###.
+  if (Math.abs(alteration) > 2) return null;
+  const fondamentale = note(lettre, alteration);
+
+  return {
+    note: fondamentale,
+    anglo: joli(formatNote(fondamentale)) + lu.suffixe,
+    latin: joli(formatNoteLatin(fondamentale)) + lu.suffixe,
+  };
+}
+
+/**
+ * Les hauteurs de l'accord d'un degré, en classes de hauteur (0 = Do), de la
+ * fondamentale vers le haut. C'est ce qu'il faut pour le FAIRE ENTENDRE :
+ * l'orthographe n'intervient pas dans le son.
+ */
+export function hauteursDuDegre(mode: Mode, degre: string, toniquePc: number): number[] | null {
+  const lu = lireDegre(mode, degre);
+  if (!lu) return null;
+  const racine = toniquePc + lu.demiTons;
+  return INTERVALLES[lu.qualite].map((d) => (((racine + d) % 12) + 12) % 12);
+}
+
+/**
+ * Une suite de degrés jouée dans une tonalité : ["C", "G", "Am", "F"].
+ * Rend null si un seul degré n'est pas orthographiable — plutôt qu'une grille
+ * à trous.
+ */
+export function accordsDesDegres(
+  mode: Mode,
+  degres: string[],
+  toniquePc: number,
+  systeme: "anglo" | "latin" = "anglo",
+): string[] | null {
+  const out: string[] = [];
+  for (const degre of degres) {
+    const a = accordDuDegre(mode, degre, toniquePc);
+    if (!a) return null;
+    out.push(systeme === "latin" ? a.latin : a.anglo);
+  }
+  return out;
 }
