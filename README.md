@@ -718,6 +718,43 @@ Chaque progression **s'entend** (grille jouée en boucle, tonalité au choix) et
 partout ce que ces données sont : des progressions en degrés, pas les accords
 exacts, pas des morceaux jouables.
 
+#### « À apprendre » — et le répertoire qu'on peut pré-remplir
+
+Sur `/repertoire`, sous la liste personnelle, une section **À apprendre** propose
+30 morceaux du corpus **dont la grille se joue entièrement avec les onze formes
+d'accords ouverts** enseignées par les leçons. Rien n'est ajouté aux données pour
+ça : la liste est **déduite** du corpus croisé avec `chord-shapes.ts`.
+
+Le classement suit trois termes, du plus décisif au moins :
+
+1. **La confiance dans le fait que le morceau soit connu** — ce n'est pas une
+   mesure de popularité, le corpus n'en contient pas, mais ce que la *source*
+   garantit : Isophonics ne contient que des albums entiers des Beatles, de
+   Queen et de Carole King ; Billboard, que des succès classés.
+2. **Le nombre d'accords différents** — `V – I – V – I` n'apprend pas
+   grand-chose à côté de `I – V – vi – IV`.
+3. **La fréquence de la progression**, qui dit si elle resservira ailleurs.
+
+Avec au plus deux morceaux par artiste et trois par progression : c'est une
+liste de grilles à apprendre, pas une discographie.
+
+**La réserve est affichée en tête, parce qu'elle change tout** : le corpus ne
+garde pas la tonalité d'origine, seulement les degrés. La tonalité proposée est
+celle qui rend la grille jouable **sans barré** — pas celle du disque. On
+apprend la grille du morceau, transposée ; joué comme ça, ça ne tombera pas sur
+l'enregistrement.
+
+**Changement de règle, assumé.** Le répertoire était « une liste saisie à la
+main », et il le reste par défaut : rien n'y entre tout seul. Mais chaque
+suggestion porte un bouton « + Répertoire » qui l'y ajoute, avec la tonalité et
+une note expliquant d'où elle vient. C'est un ajout demandé explicitement ;
+l'autre moitié de la règle — **aucune tablature engendrée** — ne bouge pas.
+
+Un détail qui n'en est pas un : la tonalité enregistrée est la **tonique**, pas
+le premier accord de la grille. « Don't Stop Me Now » commence sur un V7 ;
+l'écrire « A » pour un morceau en ré majeur aurait été faux, et c'est le champ
+qu'on relit six mois plus tard. Un test le vérifie sur les 40 suggestions.
+
 #### Reconstruire `donnees.ts`
 
 ```sh

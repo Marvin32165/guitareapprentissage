@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as donnees from "./donnees";
-import { SOURCES, chargerCorpus, titrer, normaliser } from "./corpus";
+import { SOURCES, chargerCorpus, titrer } from "./corpus";
+import { normaliser } from "@/lib/texte";
 import {
   accordDuDegre,
   accordsDeLaProgression,

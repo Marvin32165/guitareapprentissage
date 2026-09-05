@@ -356,6 +356,23 @@ Chaque progression s'entend (grille en boucle, tonalité au choix) et se pose su
 le manche. Et l'interface répète partout ce que ces données sont : **des
 progressions en degrés, pas les accords exacts, pas des morceaux jouables**.
 
+**Quatrième usage : « À apprendre ».** Sous le répertoire, 30 morceaux du corpus
+dont la grille se joue entièrement avec les onze formes d'accords ouverts des
+leçons. Rien n'est ajouté aux données : c'est déduit du corpus croisé avec les
+formes. Classé par la confiance dans le fait que le morceau soit connu (ce que
+la source garantit, faute de mesure de popularité), puis par le nombre d'accords
+différents, puis par la fréquence de la progression. Deux morceaux par artiste
+au plus, trois par progression.
+
+La réserve est en tête de section : **la tonalité proposée est celle qui évite
+les barrés, pas celle du disque**. On apprend la grille transposée, pas le
+morceau.
+
+**Le répertoire peut maintenant être pré-rempli** — changement de règle assumé,
+demandé explicitement. Il reste vide par défaut ; chaque suggestion porte un
+bouton qui l'ajoute, avec sa tonalité et une note disant d'où elle vient.
+L'autre moitié de la règle ne bouge pas : **aucune tablature engendrée**.
+
 ---
 
 ## 4. Limites connues, à dire franchement

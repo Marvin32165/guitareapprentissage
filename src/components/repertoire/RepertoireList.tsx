@@ -2,6 +2,8 @@
 
 import { useCallback, useState } from "react";
 import { ProgressionDuMorceau } from "@/components/progressions/ProgressionDuMorceau";
+import { AApprendre } from "@/components/progressions/AApprendre";
+import { normaliser } from "@/lib/texte";
 
 // Répertoire : une liste de titres saisie à la main, avec des notes
 // personnelles. Rien n'est récupéré ailleurs, aucune tablature n'est engendrée
@@ -31,6 +33,9 @@ export function RepertoireList({
 }) {
   const [songs, setSongs] = useState<Song[]>(initial);
   const [ouvert, setOuvert] = useState(false);
+  // Les suggestions font descendre le corpus : on ne les charge que si on les
+  // demande, pour qu'ouvrir son répertoire reste instantané.
+  const [suggestions, setSuggestions] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
   const ajouter = useCallback(async (form: HTMLFormElement) => {
@@ -140,9 +145,34 @@ export function RepertoireList({
         </>
       )}
 
+      <section className="space-y-3 border-t border-neutral-800 pt-5">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight text-neutral-100">À apprendre</h2>
+          <p className="mt-1 text-sm text-neutral-400">
+            Des morceaux du corpus dont la grille se joue entièrement avec les accords ouverts
+            des leçons. Touche « + Répertoire » pour en mettre un dans ta liste.
+          </p>
+        </div>
+        {suggestions ? (
+          <AApprendre
+            dejaLa={new Set(songs.map((s) => normaliser(s.title)))}
+            onAjout={(song) => setSongs((liste) => [song as Song, ...liste])}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setSuggestions(true)}
+            className="min-h-11 w-full rounded-xl border border-neutral-700 px-4 text-sm text-neutral-200 hover:bg-neutral-900"
+          >
+            Proposer des morceaux
+          </button>
+        )}
+      </section>
+
       <p className="text-xs text-neutral-600">
-        Cette liste est la tienne : aucun titre n&apos;est récupéré ailleurs, et
-        l&apos;application n&apos;engendre aucune tablature.
+        Ta liste reste la tienne : rien n&apos;y entre sans que tu le demandes, et
+        l&apos;application n&apos;engendre toujours aucune tablature. Les suggestions ne
+        donnent que des degrés et des accords ouverts.
       </p>
     </div>
   );

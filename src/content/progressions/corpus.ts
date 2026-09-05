@@ -15,6 +15,7 @@
 // /_next/static) : la recherche fonctionne hors-ligne.
 
 import { type Mode, decouperDegre } from "@/lib/music/degres";
+import { normaliser } from "@/lib/texte";
 
 export interface ProgressionCorpus {
   id: number;
@@ -208,16 +209,6 @@ export function progressionParDegres(
 }
 
 // ── Recherche de morceau par titre ──
-
-/** Minuscules, sans accents ni ponctuation : « Don't Stop » → « dont stop ». */
-export function normaliser(texte: string): string {
-  return texte
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
 
 let recherche: string[] | null = null;
 
