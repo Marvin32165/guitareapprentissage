@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { PROGRESSIONS, getProgression, buildProgression, KEYS } from "./backing";
+import {
+  PROGRESSIONS,
+  getProgression,
+  buildProgression,
+  grilleDepuisDegres,
+  KEYS,
+} from "./backing";
 import { parseNote, pitchClass } from "@/lib/music/pitch";
 import { majorScale, naturalMinorScale } from "@/lib/music/scales";
 
@@ -95,5 +101,40 @@ describe("grille développée", () => {
         }
       }
     }
+  });
+});
+
+describe("grilleDepuisDegres", () => {
+  it("joue exactement ce que le chiffrage annonce", () => {
+    const grille = grilleDepuisDegres("major", ["I", "V", "vi", "IV"], 0)!;
+    expect(grille.map((c) => c.symbol)).toEqual(["C", "G", "Am", "F"]);
+    // Les fondamentales entendues : Do, Sol, La, Fa.
+    expect(grille.map((c) => c.bassMidi % 12)).toEqual([0, 7, 9, 5]);
+  });
+
+  it("sait jouer les emprunts, que l'harmonisation de la gamme ne produit pas", () => {
+    const grille = grilleDepuisDegres("major", ["I", "♭VII", "IV", "I"], 7)!;
+    expect(grille.map((c) => c.symbol)).toEqual(["G", "F", "C", "G"]);
+  });
+
+  it("empile les voix vers le haut, sans croisement", () => {
+    for (const degres of [["I", "V", "vi", "IV"], ["i", "VI", "III", "VII"]]) {
+      for (let tonique = 0; tonique < 12; tonique++) {
+        const grille = grilleDepuisDegres(tonique % 2 ? "major" : "minor", degres, tonique)!;
+        for (const accord of grille) {
+          for (let i = 1; i < accord.midis.length; i++) {
+            expect(accord.midis[i]).toBeGreaterThan(accord.midis[i - 1]);
+          }
+          // La basse ne monte jamais au-dessus de l'accord ; elle peut
+          // tomber sur la même note (place() les cale sur deux planchers
+          // distants d'une octave moins une tierce mineure).
+          expect(accord.bassMidi).toBeLessThanOrEqual(accord.midis[0]);
+        }
+      }
+    }
+  });
+
+  it("rend null plutôt que de jouer autre chose que ce qui est écrit", () => {
+    expect(grilleDepuisDegres("major", ["I", "XYZ"], 0)).toBeNull();
   });
 });

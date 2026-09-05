@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Fretboard } from "@/components/fretboard/Fretboard";
 import { ChordDiagram } from "@/components/fretboard/ChordDiagram";
+import { BlocCorpus } from "@/components/progressions/BlocCorpus";
 import { getChordShape } from "@/lib/music/chord-shapes";
 import { AudioUnlockButton } from "@/components/audio/AudioProvider";
 import { getConcept } from "@/content/concepts";
@@ -215,6 +216,8 @@ function Block({
       return <FretboardBlock caption={block.caption} spec={block.spec} />;
     case "chords":
       return <ChordsBlock caption={block.caption} shapeIds={block.shapeIds} />;
+    case "corpus":
+      return <BlocCorpus mode={block.mode} degres={block.degres} legende={block.legende} />;
     case "exercise":
       return (
         <ExerciseBlock

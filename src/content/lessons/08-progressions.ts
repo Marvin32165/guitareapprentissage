@@ -31,6 +31,12 @@ export const lesson: Lesson = {
       shapeIds: ["G", "D", "Em", "C"],
     },
     {
+      kind: "corpus",
+      mode: "major",
+      degres: ["I", "V", "vi", "IV"],
+      legende: "Qui joue I – V – vi – IV ?",
+    },
+    {
       kind: "heading",
       text: "Le V appelle le I",
     },
@@ -56,6 +62,12 @@ export const lesson: Lesson = {
       kind: "fretboard",
       caption: "L'accord de Sol, Ve degré de Do majeur : le Si qu'il contient est la sensible",
       spec: { root: "G", kind: "chordMaj", fromFret: 0, toFret: 10, labelMode: "note" },
+    },
+    {
+      kind: "corpus",
+      mode: "major",
+      degres: ["ii", "V", "I"],
+      legende: "Où tombe la cadence ii – V – I ?",
     },
     {
       kind: "exercise",

@@ -16,6 +16,7 @@
 import { parseNote, pitchClass, formatNote, type Note } from "@/lib/music/pitch";
 import { majorScale, naturalMinorScale } from "@/lib/music/scales";
 import { harmonizeScale, type HarmonizedDegree } from "@/lib/music/harmony";
+import { accordDuDegre, hauteursDuDegre, lireDegre } from "@/lib/music/degres";
 
 export interface ProgressionDef {
   id: string;
@@ -146,3 +147,46 @@ export function keyLabel(key: string, mode: "major" | "minor"): string {
 }
 
 export const KEYS = ["C", "G", "D", "A", "E", "F", "Bb", "Eb"];
+
+/**
+ * Grille à partir de degrés écrits (« I », « ♭VII », « viiø7 »), et non d'un
+ * rang dans la gamme : c'est ce qu'il faut pour faire entendre une progression
+ * venue du corpus, qui contient des emprunts que l'harmonisation de la gamme
+ * ne produit pas.
+ *
+ * Rend null si un degré n'est pas lisible — plutôt que de jouer autre chose que
+ * ce qui est affiché.
+ */
+export function grilleDepuisDegres(
+  mode: "major" | "minor",
+  degres: string[],
+  toniquePc: number,
+): BackingChord[] | null {
+  const out: BackingChord[] = [];
+  for (let bar = 0; bar < degres.length; bar++) {
+    const lu = lireDegre(mode, degres[bar]);
+    const hauteurs = hauteursDuDegre(mode, degres[bar], toniquePc);
+    const accord = accordDuDegre(mode, degres[bar], toniquePc);
+    if (!lu || !hauteurs || !accord) return null;
+    out.push({
+      bar,
+      degree: lu.rang,
+      roman: degres[bar],
+      symbol: accord.anglo,
+      midis: voicePitchClasses(hauteurs),
+      bassMidi: place(hauteurs[0], BASS_LOW),
+    });
+  }
+  return out;
+}
+
+/** Même empilement que voice(), à partir de classes de hauteur. */
+function voicePitchClasses(pcs: number[]): number[] {
+  let precedent = CHORD_LOW - 1;
+  return pcs.map((pc) => {
+    let midi = place(pc, CHORD_LOW);
+    while (midi <= precedent) midi += 12;
+    precedent = midi;
+    return midi;
+  });
+}

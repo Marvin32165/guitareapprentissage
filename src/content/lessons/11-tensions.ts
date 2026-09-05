@@ -115,6 +115,12 @@ export const lesson: Lesson = {
       },
     },
     {
+      kind: "corpus",
+      mode: "major",
+      degres: ["ii7", "V7", "Imaj7"],
+      legende: "Le ii7 – V7 – Imaj7, dans le corpus",
+    },
+    {
       kind: "exercise",
       exercise: {
         id: "l11-e4",
